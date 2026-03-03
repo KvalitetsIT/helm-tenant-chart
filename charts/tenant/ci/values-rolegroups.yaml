@@ -1,0 +1,23 @@
+roleGroups:
+  viewer:
+    - tenant-readers@company.com    # replaces the default {tenant}-viewer group
+  developer:
+    - tenant-devs@company.com       # replaces the default {tenant}-developer group
+
+projectDefaults:
+  application:
+    source:
+      repoURL: "https://github.com/example/tenant-repo"
+      targetRevision: "main"
+  resourceQuota:
+    spec:
+      hard:
+        limits.cpu: "4"
+        limits.memory: "8Gi"
+        requests.storage: "100Gi"
+
+projects:
+  inventory:
+    application:
+      source:
+        path: "inventory/apps"

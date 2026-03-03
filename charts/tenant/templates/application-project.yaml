@@ -1,0 +1,33 @@
+{{- include "tenant.validateProjectDefaults" .Values.projectDefaults }}
+{{- range $name, $project := .Values.projects }}
+{{- $tenantName := include "tenant.name" $ }}
+{{- $p := fromYaml (include "tenant.merge" (dict "defaults" $.Values.projectDefaults "override" $project)) }}
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: {{ $name }}-project
+  namespace: {{ $tenantName }}
+  labels:
+    {{- include "tenant.labels" $ | nindent 4 }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "-10"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: {{ include "tenant.projectAppProjectName" $ }}
+  source:
+    repoURL: {{ required (printf "projects.%s.projectApplication.source.repoURL is required" $name) $p.projectApplication.source.repoURL }}
+    chart: {{ $p.projectApplication.source.chart | default "project" }}
+    targetRevision: {{ required (printf "projects.%s.projectApplication.source.targetRevision is required" $name) $p.projectApplication.source.targetRevision }}
+    helm:
+      valuesObject:
+        {{- include "tenant.buildValuesObject" (dict "root" $ "name" $name "p" $p) | nindent 8 }}
+  destination:
+    namespace: {{ printf "%s-%s" $tenantName $name }}
+    server: https://kubernetes.default.svc
+  {{- with $p.projectApplication.syncPolicy }}
+  syncPolicy:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+{{- end }}

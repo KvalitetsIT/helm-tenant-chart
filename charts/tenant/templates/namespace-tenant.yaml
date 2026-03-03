@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ include "tenant.name" . }}
+  labels:
+    {{- include "tenant.labels" . | nindent 4 }}
+    tenant.kitkube.dk/name: {{ include "tenant.name" . }}
+    {{- with .Values.tenantNamespace.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "-20"
+    helm.sh/resource-policy: keep
+    {{- with .Values.tenantNamespace.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}

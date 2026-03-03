@@ -1,0 +1,123 @@
+# -- Map of tenant projects to create.
+# Each key becomes a project named `<tenant>-<key>`.
+# See the [project chart values](../project/README.md#values) for the full schema and the default values.
+# @default -- See below
+projects:
+
+  '\<project-name>':
+
+    # -- Optional. Labels and annotations for the project namespace.
+    # Overrides `projectDefaults.namespace`.
+    namespace:
+      labels: {}
+      annotations: {}
+
+    projectApplication:
+      source:
+        # -- Optional. Pin a specific project chart version for this project.
+        # Overrides `projectDefaults.projectApplication.source.targetRevision`.
+        targetRevision: "1.*"
+
+    # -- Optional. Additional RBAC roles for the per-project AppProject.
+    # Merged on top of the project chart's default roles (viewer, developer).
+    # Supports `{tenant}` and `{project}` placeholder substitution.
+    # Overrides `projectDefaults.appProject`.
+    # @default -- See below
+    appProject:
+      # -- Optional. Kubernetes resource kinds allowed in the project namespace.
+      # Wildcard allows all — tighten per project as needed.
+      # Overrides `projectDefaults.appProject.namespaceResourceWhitelist`.
+      namespaceResourceWhitelist:
+        - group: "*"
+          kind: "*"
+      # -- Optional. Kubernetes resource kinds explicitly denied in the project namespace.
+      # Prevents tenants from managing resources that are owned by the tenant chart.
+      # Overrides `projectDefaults.appProject.namespaceResourceBlacklist`.
+      namespaceResourceBlacklist:
+        - group: rbac.authorization.k8s.io
+          kind: Role
+        - group: rbac.authorization.k8s.io
+          kind: RoleBinding
+        - group: ""
+          kind: ResourceQuota
+        - group: ""
+          kind: LimitRange
+      # -- Optional. RBAC roles for the AppProject.
+      # Supports `{tenant}` and `{project}` placeholder substitution.
+      # Overrides `projectDefaults.appProject.roles`.
+      # @default -- See below
+      roles:
+        # -- Optional. Read-only role — grants view and log access to project workloads.
+        viewer:
+          description: "Read-only access to {project} workloads"
+          # -- Optional. AD/OIDC groups granted the viewer role.
+          groups:
+            - "{tenant}-viewer"
+          # -- Optional. ArgoCD RBAC policy strings for the viewer role.
+          policies:
+            - "applications, get, {project}/{tenant}/*, allow"
+            - "logs, get, {project}/*, allow"
+        # -- Optional. Developer role — grants full sync and action access to project workloads.
+        developer:
+          description: "Can sync and all actions on {project} workloads"
+          # -- Optional. AD/OIDC groups granted the developer role.
+          groups:
+            - "{tenant}-developer"
+          # -- Optional. ArgoCD RBAC policy strings for the developer role.
+          policies:
+            - "applications, get, {project}/{tenant}/*, allow"
+            - "logs, get, {project}/*, allow"
+            - "applications, update, {project}/{tenant}/*, allow"
+            - "applications, update/*, {project}/{tenant}/*, allow"
+            - "applications, delete, {project}/{tenant}/*, allow"
+            - "applications, delete/*, {project}/{tenant}/*, allow"
+            - "applications, sync, {project}/{tenant}/*, allow"
+            - "applications, action/*, {project}/{tenant}/*, allow"
+
+    application:
+      source:
+        # -- Required. Path to the app-of-apps directory in the git repository.
+        path: <project>/apps
+
+        # -- Optional. Git repository URL.
+        # Overrides `projectDefaults.application.source.repoURL`.
+        repoURL: https://github.com/example/tenant-repo
+
+        # -- Optional. Git branch, tag, or commit SHA.
+        # Overrides `projectDefaults.application.source.targetRevision`.
+        targetRevision: main
+
+        helm:
+          # -- Optional. Helm value files.
+          # Overrides `projectDefaults.application.source.helm.valueFiles`.
+          valueFiles:
+            - values.yaml
+
+    # -- Required if not set in projectDefaults. ResourceQuota hard limits.
+    # Overrides `projectDefaults.resourceQuota`.
+    resourceQuota:
+      spec:
+        hard:
+          limits.cpu: ""
+          limits.memory: ""
+          requests.storage: ""
+
+    # -- Optional. LimitRange configuration.
+    # Overrides `projectDefaults.limitRange`.
+    limitRange:
+      enabled: false
+      spec:
+        limits:
+          - type: Container
+            default:
+              cpu: 50m
+              memory: 64Mi
+            defaultRequest:
+              cpu: 25m
+              memory: 32Mi
+
+    # -- Optional. Enable or disable the `templates` subchart for this project.
+    # When false, no NetworkPolicies (default or custom) are rendered.
+    # Overrides `projectDefaults.templates`.
+    templates:
+      enabled: true

@@ -1,0 +1,16 @@
+tenantName: acme
+projectName: inventory
+tenantAppProjectName: acme-apps
+
+application:
+  source:
+    path: inventory/apps
+    repoURL: https://github.com/example/tenant-repo
+    targetRevision: "main"
+
+resourceQuota:
+  spec:
+    hard:
+      limits.cpu: "4"
+      limits.memory: 8Gi
+      requests.storage: 100Gi

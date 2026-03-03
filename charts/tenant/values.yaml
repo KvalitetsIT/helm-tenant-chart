@@ -1,0 +1,85 @@
+# -- Optional. Name override for the tenant.
+nameOverride: ""
+
+# -- Optional. Map of role name → AD/OIDC group list applied globally to all AppProjects.
+# Acts as the lowest-precedence default — per-project `appProject.roles.<name>.groups` always wins.
+roleGroups: {}
+
+tenantNamespace:
+  # -- Optional. Additional labels for the tenant namespace.
+  labels: {}
+  # -- Optional. Additional annotations for the tenant namespace.
+  annotations: {}
+
+# -----------------------------------------------------------------------
+# PER-PROJECT DEFAULTS
+# Deep-merged with each entry under projects.<name> — project values win.
+# See the project chart values for additional options:
+# https://github.com/KvalitetsIT/helm-repo/blob/master/project/README.md#values
+# -----------------------------------------------------------------------
+
+# -- Shared defaults applied to every project.
+# All keys are deep-merged with `projects.<name>` — project values win.
+# See the [project chart values](../project/README.md#values) for the full schema,
+# including `limitRange`, `templates`, `appProject`, and `namespace`.
+# @default -- See below
+projectDefaults:
+
+  # -- Default deployment config for `<project>-project` Applications (runs the project chart).
+  # Governed by the `<tenant>-projects` AppProject.
+  # Per-project override: `projects.<name>.projectApplication`.
+  # @default -- See below
+  projectApplication:
+    source:
+      # -- Required. OCI/Helm repository URL for the project chart.
+      repoURL: "https://raw.githubusercontent.com/KvalitetsIT/helm-repo/master/"
+      # -- Required. Chart name within the repository.
+      chart: project
+      # -- Required. Chart version to deploy. Supports semver ranges.
+      targetRevision: "1.*"
+    # -- Optional. Sync policy applied to all project Applications.
+    syncPolicy:
+      automated:
+        prune: true
+        selfHeal: true
+
+  # -- Default config for `<project>-apps` Applications (app-of-apps).
+  # Governed by the `<tenant>-apps` AppProject.
+  # `source.path` cannot be set here — it must be provided per project.
+  # Per-project override: `projects.<name>.application`.
+  # @default -- See below
+  application:
+    source:
+      # -- Required. Default git repository URL for the app-of-apps.
+      repoURL: ""
+      # -- Required. Default git branch, tag, or commit SHA.
+      targetRevision: ""
+      # -- Optional. Default Helm value files passed to the app-of-apps Application.
+      # Per-project overrides replace this list entirely.
+      helm:
+        valueFiles:
+          - values.yaml
+
+  # -- Default ResourceQuota passed to every project via the project chart.
+  # `limits.cpu`, `limits.memory`, and `requests.storage` have no project chart defaults — they must be set here or per project.
+  # Per-project override: `projects.<name>.resourceQuota`.
+  # @default -- See below
+  resourceQuota:
+    spec:
+      hard:
+        # -- Required
+        limits.cpu: ""
+        # -- Required
+        limits.memory: ""
+        # -- Required
+        requests.storage: ""
+
+# -----------------------------------------------------------------------
+# TENANT PROJECTS
+# Each key becomes a project named <tenant>-<key>.
+# -----------------------------------------------------------------------
+
+# -- Map of tenant projects to create.
+# Each key becomes a project named `<tenant>-<key>`.
+# See [Projects](#projects) for the full schema and examples.
+projects: {}

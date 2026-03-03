@@ -1,0 +1,47 @@
+{{- if and .Values.tenantName .Values.projectName }}
+{{- $projectNamespace := include "project.projectNamespace" . }}
+{{- $spec := .Values.appProject }}
+---
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: {{ $projectNamespace }}
+  namespace: argocd
+  labels:
+    {{- include "project.labels" . | nindent 4 }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "-20"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  description: {{ $projectNamespace }} project
+  sourceNamespaces:
+    - {{ .Values.tenantName }}
+  sourceRepos:
+    - {{ required "application.source.repoURL is required" .Values.application.source.repoURL }}
+  destinations:
+    - namespace: {{ $projectNamespace }}
+      server: https://kubernetes.default.svc
+  {{- with $spec.namespaceResourceBlacklist }}
+  namespaceResourceBlacklist:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with $spec.namespaceResourceWhitelist }}
+  namespaceResourceWhitelist:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  roles:
+  {{- range $roleName, $roleDef := $spec.roles }}
+    - name: {{ $roleName }}
+      description: {{ $roleDef.description | replace "{tenant}" $.Values.tenantName | replace "{project}" $projectNamespace | quote }}
+      groups:
+      {{- range $roleDef.groups }}
+        - {{ . | replace "{tenant}" $.Values.tenantName | replace "{project}" $projectNamespace | quote }}
+      {{- end }}
+      policies:
+      {{- range $roleDef.policies }}
+        {{- $parsed := . | replace "{tenant}" $.Values.tenantName | replace "{project}" $projectNamespace }}
+        - "p, proj:{{ $projectNamespace }}:{{ $roleName }}, {{ $parsed }}"
+      {{- end }}
+  {{- end }}
+{{- end }}

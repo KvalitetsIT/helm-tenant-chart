@@ -1,0 +1,32 @@
+{{- if and .Values.tenantName .Values.projectName }}
+{{- $app := .Values.application }}
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: {{ .Values.projectName }}-apps
+  namespace: {{ .Values.tenantName }}
+  labels:
+    {{- include "project.labels" . | nindent 4 }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "-10"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: {{ required "tenantAppProjectName is required" .Values.tenantAppProjectName }}
+  source:
+    repoURL: {{ required "application.source.repoURL is required" $app.source.repoURL }}
+    path: {{ required "application.source.path is required" $app.source.path }}
+    targetRevision: {{ required "application.source.targetRevision is required" $app.source.targetRevision }}
+    {{- with $app.source.helm }}
+    helm:
+      {{- toYaml . | nindent 6 }}
+    {{- end }}
+  destination:
+    namespace: {{ .Values.tenantName }}
+    server: https://kubernetes.default.svc
+  {{- with $app.syncPolicy }}
+  syncPolicy:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+{{- end }}

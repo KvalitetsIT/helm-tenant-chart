@@ -1,0 +1,24 @@
+projectDefaults:
+  application:
+    source:
+      repoURL: "https://github.com/example/tenant-repo"
+      targetRevision: "main"
+  resourceQuota:
+    spec:
+      hard:
+        limits.cpu: "4"
+        limits.memory: "8Gi"
+        requests.storage: "100Gi"
+
+projects:
+  inventory:
+    application:
+      source:
+        path: "inventory/apps"
+
+  legacy:
+    application:
+      source:
+        path: "legacy/apps"
+    templates:
+      enabled: false  # disables the templates subchart — no NetworkPolicies rendered at all

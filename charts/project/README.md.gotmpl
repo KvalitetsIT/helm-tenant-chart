@@ -1,0 +1,159 @@
+{{ template "chart.header" . }}
+{{ template "chart.deprecationWarning" . }}
+
+{{ template "chart.badgesSection" . }}
+
+{{ template "chart.description" . }}
+
+{{ template "chart.homepageLine" . }}
+
+{{ template "chart.maintainersSection" . }}
+
+{{ template "chart.sourcesSection" . }}
+
+{{ template "chart.requirementsSection" . }}
+
+{{ template "chart.valuesSection" . }}
+
+## Overview
+
+The `project` chart deploys the per-project infrastructure for a tenant project. It is not intended
+to be installed manually — it is deployed as a `<project>-project` ArgoCD Application governed by
+the `<tenant>-projects` AppProject, ensuring values are injected and controlled by the tenant chart.
+
+### Resources Deployed
+
+| Resource | Name | Controlled by |
+|----------|------|---------------|
+| `Namespace` | `<tenant>-<project>` | always |
+| `AppProject` | `<tenant>-<project>` | always |
+| `Application` | `<project>-apps` | always |
+| `ResourceQuota` | `resource-quota` | `resourceQuota.enabled` |
+| `LimitRange` | `limit-range` | `limitRange.enabled` |
+| `NetworkPolicy` | `default-deny` | `templates.enabled` |
+| `CiliumNetworkPolicy` | `allow-kube-dns` | `templates.enabled` |
+| `NetworkPolicy` | `allow-within-namespace` | `templates.enabled` |
+| `NetworkPolicy` | `<key>` (extra) | `templates.networkPolicies` |
+| `CiliumNetworkPolicy` | `<key>` (extra) | `templates.ciliumNetworkPolicies` |
+
+## Usage in the Tenant Chart
+
+Values are injected via `helm.valuesObject` in the [tenant chart](../tenant/).
+The project chart's own defaults apply for any key not overridden.
+
+Override values globally for all projects via `projectDefaults`:
+
+```yaml
+projectDefaults:
+  resourceQuota:
+    spec:
+      hard:
+        limits.cpu: "4"
+        limits.memory: "8Gi"
+        requests.storage: "100Gi"
+  application:
+    source:
+      repoURL: https://github.com/example/tenant-repo
+      targetRevision: main
+```
+
+Override per project via `projects.<name>`:
+
+```yaml
+projects:
+  reporting:
+    resourceQuota:
+      spec:
+        hard:
+          limits.cpu: "8"
+          limits.memory: "16Gi"
+          requests.storage: "200Gi"
+    appProject:
+      roles:
+        ops:
+          description: "Ops access to {project}"
+          groups:
+            - "{project}-ops"          # {project} → <tenant>-<project> at runtime
+          policies:
+            - "applications, *, {project}/{tenant}/*, allow"
+```
+
+## Cross-namespace NetworkPolicies
+
+The project chart includes the [`templates`](../../helm-templates/charts/templates/) subchart
+which renders extra `NetworkPolicy` and `CiliumNetworkPolicy` resources from a values map.
+Use it to express cross-namespace connectivity on top of the default policies.
+
+Configure extra policies under the `templates` key. Each map key becomes the resource name.
+
+### Share a service
+
+Allow another namespace to reach specific pods in this namespace (adds an Ingress rule):
+
+```yaml
+templates:
+  networkPolicies:
+    share-api:
+      podSelector:
+        matchLabels:
+          app: my-api
+      policyTypes:
+        - Ingress
+      ingress:
+        - from:
+            - namespaceSelector:
+                matchLabels:
+                  kubernetes.io/metadata.name: consumer-namespace  # exact namespace name
+              podSelector:                # namespaceSelector AND podSelector in same list item
+                matchLabels:
+                  app: consumer
+          ports:
+            - port: 8080
+```
+
+### Consume a service
+
+Allow pods in this namespace to reach specific pods in another namespace (adds an Egress rule):
+
+```yaml
+templates:
+  networkPolicies:
+    consume-database:
+      podSelector: {}
+      policyTypes:
+        - Egress
+      egress:
+        - to:
+            - namespaceSelector:         # namespaceSelector AND podSelector in same list item
+                matchLabels:
+                  kubernetes.io/metadata.name: database-namespace
+              podSelector:
+                matchLabels:
+                  app: postgres
+          ports:
+            - port: 5432
+```
+
+### FQDN egress (Cilium)
+
+Allow specific pods to reach external services by domain name. Requires `templates.enabled: true`
+so that the `allow-kube-dns` CiliumNetworkPolicy is present for FQDN resolution.
+
+```yaml
+templates:
+  ciliumNetworkPolicies:
+    allow-external-api:
+      endpointSelector:
+        matchLabels:
+          app: my-app
+      egress:
+        - toFQDNs:
+            - matchName: "api.example.com"       # exact hostname
+            - matchPattern: "*.storage.azure.com" # wildcard pattern
+          toPorts:
+            - ports:
+                - port: "443"
+                  protocol: TCP
+```
+
+{{ template "helm-docs.versionFooter" . }}

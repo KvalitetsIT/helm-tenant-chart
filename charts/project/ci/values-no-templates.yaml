@@ -1,0 +1,15 @@
+tenantName: acme
+projectName: inventory
+tenantAppProjectName: acme-apps
+
+application:
+  source:
+    path: inventory/apps
+    repoURL: https://github.com/example/tenant-repo
+    targetRevision: "main"
+
+resourceQuota:
+  enabled: false  # no ResourceQuota rendered
+
+templates:
+  enabled: false  # no NetworkPolicies rendered at all
