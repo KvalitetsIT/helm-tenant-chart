@@ -44,6 +44,11 @@ jobs:
           sed -i "s/^version: .*/version: ${VERSION}/g" "charts/${CHART}/Chart.yaml"
           sed -i "s/^appVersion: .*/appVersion: \"${VERSION}\"/g" "charts/${CHART}/Chart.yaml"
 
+      - name: Add Helm repositories
+        run: |
+          helm repo add kvalitetsit https://raw.githubusercontent.com/KvalitetsIT/helm-repo/master/
+          helm repo update
+
       - name: Update chart dependencies
         env:
           CHART: ${{ steps.info.outputs.chart }}
