@@ -78,7 +78,7 @@ Single project with required fields only. `repoURL` and `targetRevision` are sha
 projects in `projectDefaults`; only the git path is set per project.
 
 ```yaml
-{{ (.Files.Get "ci/values-minimal.yaml") -}}
+{{ (.Files.Get "ci/minimal-values.yaml") -}}
 ```
 
 ---
@@ -89,7 +89,7 @@ Multiple projects sharing global defaults, with per-project resource quota overr
 projects that need more or fewer resources.
 
 ```yaml
-{{ (.Files.Get "ci/values-multi-project.yaml") -}}
+{{ (.Files.Get "ci/multi-project-values.yaml") -}}
 ```
 
 ---
@@ -101,7 +101,7 @@ AppProjects using `roleGroups`. Per-project `appProject.roles.<name>.groups` alw
 precedence over `roleGroups`.
 
 ```yaml
-{{ (.Files.Get "ci/values-rolegroups.yaml") -}}
+{{ (.Files.Get "ci/rolegroups-values.yaml") -}}
 ```
 
 ---
@@ -112,7 +112,7 @@ Add a custom `ops` role to one project's AppProject, in addition to the default 
 developer roles. Supports `{tenant}` and `{project}` placeholder substitution.
 
 ```yaml
-{{ (.Files.Get "ci/values-custom-role.yaml") -}}
+{{ (.Files.Get "ci/custom-role-values.yaml") -}}
 ```
 
 ---
@@ -124,7 +124,7 @@ them enabled for all other projects via `projectDefaults`. Setting `templates.en
 disables the `templates` subchart entirely — no default or custom NetworkPolicies are rendered.
 
 ```yaml
-{{ (.Files.Get "ci/values-networkpolicy.yaml") -}}
+{{ (.Files.Get "ci/networkpolicy-values.yaml") -}}
 ```
 
 ---
@@ -135,7 +135,7 @@ Pin a specific project chart version for one project while leaving others on the
 `projectDefaults` version. Useful when rolling out a new project chart version incrementally.
 
 ```yaml
-{{ (.Files.Get "ci/values-pinned-version.yaml") -}}
+{{ (.Files.Get "ci/pinned-version-values.yaml") -}}
 ```
 
 ---
@@ -155,7 +155,7 @@ all repositories under a URL prefix — useful when a tenant has many repositori
 organization.
 
 ```yaml
-{{ (.Files.Get "ci/values-sealed-secrets.yaml") -}}
+{{ (.Files.Get "ci/sealed-secrets-values.yaml") -}}
 ```
 
 {{ template "helm-docs.versionFooter" . }}
