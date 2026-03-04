@@ -24,7 +24,7 @@ spec:
       valuesObject:
         {{- include "tenant.buildValuesObject" (dict "root" $ "name" $name "p" $p) | nindent 8 }}
   destination:
-    namespace: {{ printf "%s-%s" $tenantName $name }}
+    namespace: {{ include "tenant.projectNamespace" (list $tenantName $name) }}
     server: https://kubernetes.default.svc
   {{- with $p.projectApplication.syncPolicy }}
   syncPolicy:

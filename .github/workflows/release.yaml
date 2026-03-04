@@ -61,7 +61,7 @@ jobs:
 
       - name: Configure Git
         run: |
-          git config --global user.name "Github Actions"
+          git config --global user.name "GitHub Actions"
           git config --global user.email "development@kvalitetsit.dk"
 
       - name: Checkout Helm repo

@@ -1,6 +1,31 @@
-{{/* Tenant name — defaults to release name */}}
+{{/* Validate a single DNS-1123 label and fail with a clear message.
+     Call with a list: (list $value "fieldName") */}}
+{{- define "tenant.validateDNS1123Label" -}}
+{{- $value := index . 0 -}}
+{{- $field := index . 1 -}}
+{{- if not (regexMatch "^[a-z0-9]([a-z0-9-]*[a-z0-9])?$" $value) -}}
+  {{- fail (printf "%s %q is not a valid DNS-1123 label: must consist of lowercase alphanumerics and hyphens, and start and end with an alphanumeric character" $field $value) -}}
+{{- end -}}
+{{- end -}}
+
+{{/* Tenant name — defaults to release name, validated against DNS-1123 */}}
 {{- define "tenant.name" -}}
-{{- default .Release.Name .Values.nameOverride | trunc 63 | trimSuffix "-" -}}
+{{- $name := default .Release.Name .Values.nameOverride | trunc 63 | trimSuffix "-" -}}
+{{- include "tenant.validateDNS1123Label" (list $name "tenant name") -}}
+{{- $name -}}
+{{- end -}}
+
+{{/* Project namespace: <tenant>-<project> validated against DNS-1123 + 63-char limit.
+     Call with a list: (list $tenantName $projectName) */}}
+{{- define "tenant.projectNamespace" -}}
+{{- $tenantName := index . 0 -}}
+{{- $projectName := index . 1 -}}
+{{- include "tenant.validateDNS1123Label" (list $projectName "project key") -}}
+{{- $ns := printf "%s-%s" $tenantName $projectName -}}
+{{- if gt (len $ns) 63 -}}
+  {{- fail (printf "combined namespace %q exceeds the 63-character DNS-1123 limit (%d chars)" $ns (len $ns)) -}}
+{{- end -}}
+{{- $ns -}}
 {{- end -}}
 
 {{/* Chart name + version label value */}}
@@ -18,7 +43,7 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{/* Validate that disallowed fields are not set in projectDefaults.
      Call with: (include "tenant.validateProjectDefaults" .Values.projectDefaults) */}}
 {{- define "tenant.validateProjectDefaults" -}}
-{{- if (((.application).source).path) -}}
+{{- if dig "application" "source" "path" "" . -}}
   {{- fail "projectDefaults.application.source.path is not allowed — path must be set per project" -}}
 {{- end -}}
 {{- end -}}
