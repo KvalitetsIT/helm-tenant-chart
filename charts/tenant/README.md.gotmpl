@@ -1,0 +1,161 @@
+{{ template "chart.header" . }}
+{{ template "chart.deprecationWarning" . }}
+
+{{ template "chart.badgesSection" . }}
+
+{{ template "chart.description" . }}
+
+{{ template "chart.homepageLine" . }}
+
+{{ template "chart.maintainersSection" . }}
+
+{{ template "chart.sourcesSection" . }}
+
+{{ template "chart.requirementsSection" . }}
+
+{{ template "chart.valuesSection" . }}
+
+## Architecture
+
+The tenant chart sets up the full ArgoCD multi-tenancy structure for one tenant. It creates two
+tenant-level AppProjects, a tenant namespace, and one `<project>-project` Application per project.
+Each `<project>-project` Application deploys the [project chart](../project/) which creates the
+per-project infrastructure.
+
+### What the Tenant Chart Creates
+
+| Resource | Name | Description |
+|----------|------|-------------|
+| `Namespace` | `<tenant>` | Tenant namespace — all Applications live here |
+| `AppProject` | `<tenant>-apps` | Governs app-of-apps Applications |
+| `AppProject` | `<tenant>-projects` | Governs project chart deployments |
+| `Application` | `<project>-project` | Deploys the project chart (one per project) |
+| `SealedSecret` | `<key>` (extra) | Optional ArgoCD repo secrets via `templates.sealedSecrets` |
+
+### What the Project Chart Creates (per project)
+
+| Resource | Name | Controlled by |
+|----------|------|---------------|
+| `Namespace` | `<tenant>-<project>` | always |
+| `AppProject` | `<tenant>-<project>` | always |
+| `Application` | `<project>-apps` | always |
+| `ResourceQuota` | `resource-quota` | `resourceQuota.enabled` |
+| `LimitRange` | `limit-range` | `limitRange.enabled` |
+| `NetworkPolicy` | `default-deny` | `templates.enabled` |
+| `CiliumNetworkPolicy` | `allow-kube-dns` | `templates.enabled` |
+| `NetworkPolicy` | `allow-within-namespace` | `templates.enabled` |
+| `NetworkPolicy` | `<key>` (extra) | `templates.networkPolicies` |
+| `CiliumNetworkPolicy` | `<key>` (extra) | `templates.ciliumNetworkPolicies` |
+
+### AppProject Hierarchy
+
+Three AppProjects govern the system at different levels:
+
+```
+<tenant>-projects   — allows project chart Applications to create Namespaces
+<tenant>-apps       — allows app-of-apps Applications to deploy into <tenant>
+<tenant>-<project>  — allows workload Applications to deploy into <tenant>-<project>
+```
+
+The per-project AppProject (`<tenant>-<project>`) is created by the project chart. Its RBAC roles
+default to `viewer` and `developer` and support `{tenant}` / `{project}` placeholder substitution,
+where `{project}` resolves to the full project namespace `<tenant>-<project>`.
+
+## Projects
+
+Each entry under `projects` provisions a complete project setup. The minimum required per project
+is `application.source.path`. All other fields either have defaults in `projectDefaults` or are
+optional project chart values.
+
+Values flow: `projectDefaults` is deep-merged with `projects.<name>` — project values win.
+The merged result (minus `projectApplication`) is passed to the project chart as `valuesObject`.
+
+## Examples
+
+### Minimal
+
+Single project with required fields only. `repoURL` and `targetRevision` are shared across all
+projects in `projectDefaults`; only the git path is set per project.
+
+```yaml
+{{ (.Files.Get "ci/minimal-values.yaml") -}}
+```
+
+---
+
+### Multiple Projects
+
+Multiple projects sharing global defaults, with per-project resource quota overrides for
+projects that need more or fewer resources.
+
+```yaml
+{{ (.Files.Get "ci/multi-project-values.yaml") -}}
+```
+
+---
+
+### Custom Role Groups
+
+Override the default `{tenant}-viewer` / `{tenant}-developer` AD groups globally across all
+AppProjects using `roleGroups`. Per-project `appProject.roles.<name>.groups` always takes
+precedence over `roleGroups`.
+
+```yaml
+{{ (.Files.Get "ci/rolegroups-values.yaml") -}}
+```
+
+---
+
+### Per-project Custom RBAC Role
+
+Add a custom `ops` role to one project's AppProject, in addition to the default viewer and
+developer roles. Supports `{tenant}` and `{project}` placeholder substitution.
+
+```yaml
+{{ (.Files.Get "ci/custom-role-values.yaml") -}}
+```
+
+---
+
+### Customize Network Policies
+
+Disable all NetworkPolicies for a project that requires unrestricted connectivity, while keeping
+them enabled for all other projects via `projectDefaults`. Setting `templates.enabled: false`
+disables the `templates` subchart entirely — no default or custom NetworkPolicies are rendered.
+
+```yaml
+{{ (.Files.Get "ci/networkpolicy-values.yaml") -}}
+```
+
+---
+
+### Pin Project Chart Version
+
+Pin a specific project chart version for one project while leaving others on the floating
+`projectDefaults` version. Useful when rolling out a new project chart version incrementally.
+
+```yaml
+{{ (.Files.Get "ci/pinned-version-values.yaml") -}}
+```
+
+---
+
+### Declarative ArgoCD Repositories
+
+Register git repositories and credential templates with ArgoCD using SealedSecrets. SealedSecrets
+are decrypted in-cluster by the [Sealed Secrets](https://github.com/bitnami-labs/sealed-secrets)
+controller and picked up automatically by ArgoCD. Encrypt values with:
+
+```bash
+echo -n 'my-token' | kubeseal --raw --scope cluster-wide --namespace argocd --name <secret-name>
+```
+
+A **repository secret** registers one specific git repository. A **repo-creds template** matches
+all repositories under a URL prefix — useful when a tenant has many repositories under the same
+organization.
+
+```yaml
+{{ (.Files.Get "ci/sealed-secrets-values.yaml") -}}
+```
+
+{{ template "helm-docs.versionFooter" . }}

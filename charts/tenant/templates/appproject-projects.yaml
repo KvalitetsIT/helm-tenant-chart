@@ -1,0 +1,53 @@
+{{- $tenantName := include "tenant.name" . }}
+{{- $projectAppProjectName := include "tenant.projectAppProjectName" . }}
+---
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: {{ $projectAppProjectName }}
+  namespace: argocd
+  labels:
+    {{- include "tenant.labels" . | nindent 4 }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "-20"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  description: {{ $projectAppProjectName }} project
+  sourceNamespaces:
+    - {{ $tenantName }}
+  sourceRepos:
+    {{- include "tenant.projectSourceRepos" . | nindent 4 }}
+  destinations:
+  {{- range $name, $project := .Values.projects }}
+    - namespace: {{ include "tenant.projectNamespace" (list (include "tenant.name" $) $name) }}
+      server: https://kubernetes.default.svc
+  {{- end }}
+    - namespace: argocd
+      server: https://kubernetes.default.svc
+    - namespace: {{ $tenantName }}
+      server: https://kubernetes.default.svc
+  clusterResourceWhitelist:
+    - group: ""
+      kind: Namespace
+  namespaceResourceWhitelist:
+    - group: "*"
+      kind: "*"
+  roles:
+    - name: viewer
+      description: "Read-only access to all {{ $tenantName }} project Applications"
+      groups:
+      {{- range (index .Values.roleGroups "viewer") | default (list (printf "%s-viewer" $tenantName)) }}
+        - {{ . | quote }}
+      {{- end }}
+      policies:
+        - "p, proj:{{ $projectAppProjectName }}:viewer, applications, get, {{ $projectAppProjectName }}/{{ $tenantName }}/*, allow"
+    - name: developer
+      description: "Can sync {{ $tenantName }} project Applications"
+      groups:
+      {{- range (index .Values.roleGroups "developer") | default (list (printf "%s-developer" $tenantName)) }}
+        - {{ . | quote }}
+      {{- end }}
+      policies:
+        - "p, proj:{{ $projectAppProjectName }}:developer, applications, get, {{ $projectAppProjectName }}/{{ $tenantName }}/*, allow"
+        - "p, proj:{{ $projectAppProjectName }}:developer, applications, sync, {{ $projectAppProjectName }}/{{ $tenantName }}/*, allow"

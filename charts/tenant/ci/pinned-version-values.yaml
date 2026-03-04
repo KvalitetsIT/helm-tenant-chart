@@ -1,0 +1,25 @@
+projectDefaults:
+  application:
+    source:
+      repoURL: "https://github.com/example/tenant-repo"
+      targetRevision: "main"
+  resourceQuota:
+    spec:
+      hard:
+        limits.cpu: "4"
+        limits.memory: "8Gi"
+        requests.storage: "100Gi"
+
+projects:
+  inventory:
+    application:
+      source:
+        path: "inventory/apps"
+    projectApplication:
+      source:
+        targetRevision: "1.2.0"  # pin project chart version; others use the projectDefaults version
+
+  reporting:
+    application:
+      source:
+        path: "reporting/apps"

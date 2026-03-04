@@ -1,0 +1,11 @@
+{{- if .Values.limitRange.enabled }}
+---
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: limit-range
+  labels:
+    {{- include "project.labels" . | nindent 4 }}
+spec:
+  {{- toYaml .Values.limitRange.spec | nindent 2 }}
+{{- end }}

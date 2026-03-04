@@ -1,0 +1,17 @@
+projectDefaults:
+  application:
+    source:
+      repoURL: "https://github.com/example/tenant-repo"  # shared across all projects
+      targetRevision: "main"
+  resourceQuota:
+    spec:
+      hard:
+        limits.cpu: "8"
+        limits.memory: "16Gi"
+        requests.storage: "200Gi"
+
+projects:
+  inventory:
+    application:
+      source:
+        path: "inventory/apps"  # only required per-project field

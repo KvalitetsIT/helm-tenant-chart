@@ -1,0 +1,159 @@
+# -- Injected by the tenant chart. Name of the tenant.
+# @default -- ""
+tenantName: ""
+# -- Injected by the tenant chart. Name of the project.
+# @default -- ""
+projectName: ""
+# -- Injected by the tenant chart. Name of the tenant AppProject.
+# @default -- ""
+tenantAppProjectName: ""
+
+namespace:
+  # -- Optional. Additional labels for the project Namespace.
+  labels: {}
+  # -- Optional. Additional annotations for the project Namespace.
+  annotations: {}
+
+# -- Configuration for the per-project AppProject (`<tenant>-<project>`).
+# Supports `{tenant}` and `{project}` placeholder substitution in descriptions, groups, and policies.
+# Override per project via `projects.<name>.appProject` in the tenant chart.
+# @default -- See below
+appProject:
+  # -- Optional. Kubernetes resource kinds allowed in the project namespace.
+  # Wildcard allows all — tighten per project as needed.
+  namespaceResourceWhitelist:
+    - group: "*"
+      kind: "*"
+  # -- Optional. Kubernetes resource kinds explicitly denied in the project namespace.
+  # Prevents tenants from managing resources that are owned by the tenant chart.
+  namespaceResourceBlacklist:
+    - group: rbac.authorization.k8s.io
+      kind: Role
+    - group: rbac.authorization.k8s.io
+      kind: RoleBinding
+    - group: ""
+      kind: ResourceQuota
+    - group: ""
+      kind: LimitRange
+  # -- Optional. RBAC roles for the AppProject.
+  # Supports `{tenant}` and `{project}` placeholder substitution.
+  # Override or extend per project via `projects.<name>.appProject.roles` in the tenant chart.
+  # @default -- See below
+  roles:
+    # -- Optional. Read-only role — grants view and log access to project workloads.
+    viewer:
+      description: "Read-only access to {project} workloads"
+      # -- Optional. AD/OIDC groups granted the viewer role.
+      groups:
+        - "{tenant}-viewer"
+      # -- Optional. ArgoCD RBAC policy strings for the viewer role.
+      policies:
+        - "applications, get, {project}/{tenant}/*, allow"
+        - "logs, get, {project}/*, allow"
+    # -- Optional. Developer role — grants full sync and action access to project workloads.
+    developer:
+      description: "Can sync and all actions on {project} workloads"
+      # -- Optional. AD/OIDC groups granted the developer role.
+      groups:
+        - "{tenant}-developer"
+      # -- Optional. ArgoCD RBAC policy strings for the developer role.
+      policies:
+        - "applications, get, {project}/{tenant}/*, allow"
+        - "logs, get, {project}/*, allow"
+        - "applications, update, {project}/{tenant}/*, allow"
+        - "applications, update/*, {project}/{tenant}/*, allow"
+        - "applications, delete, {project}/{tenant}/*, allow"
+        - "applications, delete/*, {project}/{tenant}/*, allow"
+        - "applications, sync, {project}/{tenant}/*, allow"
+        - "applications, action/*, {project}/{tenant}/*, allow"
+
+# -- Configuration for the app-of-apps Application (`<project>-apps`).
+# `source.repoURL`, `source.path`, and `source.targetRevision` are injected by the tenant chart.
+# Override per project via `projects.<name>.application` in the tenant chart.
+# @default -- See below
+application:
+  source:
+    # -- Required. Git repository URL for the app-of-apps. Injected by the tenant chart.
+    repoURL: ""
+    # -- Required. Path to the app-of-apps directory. Injected by the tenant chart.
+    path: ""
+    # -- Required. Git branch, tag, or commit SHA. Injected by the tenant chart.
+    targetRevision: ""
+    helm:
+      # -- Optional. Helm value files passed to the app-of-apps Application.
+      # @default -- [values.yaml]
+      valueFiles:
+        - values.yaml
+  # -- Optional. Sync policy for the app-of-apps Application.
+  syncPolicy:
+    automated:
+      prune: true
+
+resourceQuota:
+  # -- Optional. Enable or disable the ResourceQuota resource.
+  enabled: true
+  # -- Required when enabled. ResourceQuota hard limits.
+  # Set via `projectDefaults.resourceQuota.spec` in the tenant chart.
+  # See [Kubernetes ResourceQuota](https://kubernetes.io/docs/concepts/policy/resource-quotas/).
+  spec: {}
+
+limitRange:
+  # -- Optional. Enable or disable the LimitRange resource.
+  enabled: false
+  # -- Optional. LimitRange limits spec.
+  # See [Kubernetes LimitRange](https://kubernetes.io/docs/concepts/policy/limit-range/).
+  spec:
+    limits:
+      - type: Container
+        default:
+          cpu: 50m
+          memory: 64Mi
+        defaultRequest:
+          cpu: 25m
+          memory: 32Mi
+
+# -- Optional. Values passed to the `templates` subchart.
+# Set `enabled: false` to disable the subchart entirely — no NetworkPolicies are rendered at all.
+# Add entries to `networkPolicies` or `ciliumNetworkPolicies` to create extra policies (e.g. cross-namespace connectivity).
+# @default -- See below
+templates:
+  # -- Optional. Enable or disable the `templates` subchart.
+  # When false, no NetworkPolicies (default or custom) are rendered.
+  enabled: true
+  # @default -- See below
+  networkPolicies:
+    # -- Default deny-all policy. Blocks all ingress and egress by default.
+    default-deny:
+      podSelector: {}
+      policyTypes:
+        - Ingress
+        - Egress
+    # -- Allow pod-to-pod communication within the same namespace.
+    allow-within-namespace:
+      podSelector: {}
+      policyTypes:
+        - Ingress
+        - Egress
+      ingress:
+        - from:
+            - podSelector: {}
+      egress:
+        - to:
+            - podSelector: {}
+  # @default -- See below
+  ciliumNetworkPolicies:
+    # -- Allow DNS egress to kube-dns. Required for Cilium FQDN-based policies.
+    allow-kube-dns:
+      endpointSelector: {}
+      egress:
+        - toEndpoints:
+            - matchLabels:
+                "k8s:io.kubernetes.pod.namespace": kube-system
+                "k8s:k8s-app": kube-dns
+          toPorts:
+            - ports:
+                - port: "53"
+                  protocol: ANY
+              rules:
+                dns:
+                  - matchPattern: "*"

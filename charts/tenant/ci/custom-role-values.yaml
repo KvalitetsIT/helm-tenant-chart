@@ -1,0 +1,26 @@
+projectDefaults:
+  application:
+    source:
+      repoURL: "https://github.com/example/tenant-repo"
+      targetRevision: "main"
+  resourceQuota:
+    spec:
+      hard:
+        limits.cpu: "4"
+        limits.memory: "8Gi"
+        requests.storage: "100Gi"
+
+projects:
+  inventory:
+    application:
+      source:
+        path: "inventory/apps"
+    appProject:
+      roles:
+        ops:
+          description: "Ops access to {project}"
+          groups:
+            - inventory-ops@company.com
+          policies:
+            - "applications, *, {project}/{tenant}/*, allow"  # {project} → <tenant>-<project>
+            - "logs, get, {project}/*, allow"

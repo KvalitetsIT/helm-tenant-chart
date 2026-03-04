@@ -1,0 +1,16 @@
+{{- if .Values.resourceQuota.enabled }}
+{{- $hard := .Values.resourceQuota.spec.hard | default dict }}
+{{- $_ := required "resourceQuota.spec.hard: 'limits.cpu' is required — set it via projectDefaults.resourceQuota.spec in the tenant chart" (index $hard "limits.cpu") }}
+{{- $_ := required "resourceQuota.spec.hard: 'limits.memory' is required — set it via projectDefaults.resourceQuota.spec in the tenant chart" (index $hard "limits.memory") }}
+{{- $_ := required "resourceQuota.spec.hard: 'requests.storage' is required — set it via projectDefaults.resourceQuota.spec in the tenant chart" (index $hard "requests.storage") }}
+---
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: resource-quota
+  labels:
+    {{- include "project.labels" . | nindent 4 }}
+spec:
+  {{- toYaml .Values.resourceQuota.spec | nindent 2 }}
+{{- end }}
+

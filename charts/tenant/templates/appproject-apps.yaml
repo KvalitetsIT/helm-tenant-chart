@@ -1,0 +1,49 @@
+{{- $tenantName := include "tenant.name" . }}
+{{- $tenantAppProjectName := include "tenant.tenantAppProjectName" . }}
+---
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: {{ $tenantAppProjectName }}
+  namespace: argocd
+  labels:
+    {{- include "tenant.labels" . | nindent 4 }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "-20"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  description: {{ $tenantAppProjectName }} project
+  sourceNamespaces:
+    - {{ $tenantName }}
+  sourceRepos:
+    {{- include "tenant.applicationSourceRepos" . | nindent 4 }}
+  destinations:
+    - namespace: {{ $tenantName }}
+      server: https://kubernetes.default.svc
+  namespaceResourceWhitelist:
+    - group: argoproj.io
+      kind: Application
+  roles:
+    - name: viewer
+      description: "Read-only access to all {{ $tenantName }} project Applications"
+      groups:
+      {{- range (index .Values.roleGroups "viewer") | default (list (printf "%s-viewer" $tenantName)) }}
+        - {{ . | quote }}
+      {{- end }}
+      policies:
+        - "p, proj:{{ $tenantAppProjectName }}:viewer, applications, get, {{ $tenantAppProjectName }}/{{ $tenantName }}/*, allow"
+    - name: developer
+      description: "Self-service sync and actions on {{ $tenantName }} project Applications"
+      groups:
+      {{- range (index .Values.roleGroups "developer") | default (list (printf "%s-developer" $tenantName)) }}
+        - {{ . | quote }}
+      {{- end }}
+      policies:
+        - "p, proj:{{ $tenantAppProjectName }}:developer, applications, get, {{ $tenantAppProjectName }}/{{ $tenantName }}/*, allow"
+        - "p, proj:{{ $tenantAppProjectName }}:developer, applications, update, {{ $tenantAppProjectName }}/{{ $tenantName }}/*, allow"
+        - "p, proj:{{ $tenantAppProjectName }}:developer, applications, update/*, {{ $tenantAppProjectName }}/{{ $tenantName }}/*, allow"
+        - "p, proj:{{ $tenantAppProjectName }}:developer, applications, delete, {{ $tenantAppProjectName }}/{{ $tenantName }}/*, allow"
+        - "p, proj:{{ $tenantAppProjectName }}:developer, applications, delete/*, {{ $tenantAppProjectName }}/{{ $tenantName }}/*, allow"
+        - "p, proj:{{ $tenantAppProjectName }}:developer, applications, sync, {{ $tenantAppProjectName }}/{{ $tenantName }}/*, allow"
+        - "p, proj:{{ $tenantAppProjectName }}:developer, applications, action/*, {{ $tenantAppProjectName }}/{{ $tenantName }}/*, allow"
