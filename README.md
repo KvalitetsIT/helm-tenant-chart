@@ -13,6 +13,25 @@ environments on a shared ArgoCD installation.
 The **tenant chart** is installed once per tenant (customer / business unit). It manages project
 chart deployments via ArgoCD Applications — the project chart is never installed manually.
 
+## Namespace naming
+
+Namespaces follow the pattern `<tenant>` and `<tenant>-<project>`:
+
+| Tenant name | Project names | Namespaces created |
+|-------------|---------------|--------------------|
+| `acme` | `inventory`, `reporting` | `acme`, `acme-inventory`, `acme-reporting` |
+| `finance` | `payroll`, `budgeting` | `finance`, `finance-payroll`, `finance-budgeting` |
+| `it-operations` | `monitoring`, `backups` | `it-operations`, `it-operations-monitoring`, `it-operations-backups` |
+| `shared-services` | `web`, `api`, `data` | `shared-services`, `shared-services-web`, `shared-services-api`, `shared-services-data` |
+
+The tenant name is typically your company name, business unit, department, or team.
+
+**Naming rules** (Kubernetes namespace requirements):
+
+- Lowercase letters, digits, and hyphens only — no uppercase, underscores, or dots
+- Must start and end with a letter or digit
+- The combined `<tenant>-<project>` name must be 63 characters or fewer
+
 ## Architecture
 
 ```
