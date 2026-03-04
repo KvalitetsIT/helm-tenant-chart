@@ -6,7 +6,7 @@ version: 1.0.0
 appVersion: 1.0.0
 home: https://github.com/KvalitetsIT
 icon: https://raw.githubusercontent.com/KvalitetsIT/.github/refs/heads/main/assets/favicon.png
-sources: 
+sources:
   - https://github.com/KvalitetsIT/helm-tenant-chart
   - https://github.com/KvalitetsIT/helm-tenant-chart/tree/main/charts/project
 maintainers:

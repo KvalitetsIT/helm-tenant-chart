@@ -45,6 +45,11 @@ jobs:
             echo "changed=false" >> "$GITHUB_OUTPUT"
           fi
 
+      - name: Add Helm repositories
+        run: |
+          helm repo add kvalitetsit https://raw.githubusercontent.com/KvalitetsIT/helm-repo/master/
+          helm repo update
+
       - name: Run chart-testing (lint)
         run: ct lint --config ct.yaml
 
@@ -52,12 +57,6 @@ jobs:
         id: kind
         uses: helm/kind-action@92086f6be054225fa813e0a4b13787fc9088faab # v1.13.0
         if: steps.list-changed.outputs.changed == 'true'
-
-      - name: Add Helm repositories
-        if: steps.list-changed.outputs.changed == 'true'
-        run: |
-          helm repo add kvalitetsit https://raw.githubusercontent.com/KvalitetsIT/helm-repo/master/
-          helm repo update
 
       - name: Update chart dependencies
         if: steps.list-changed.outputs.changed == 'true'
