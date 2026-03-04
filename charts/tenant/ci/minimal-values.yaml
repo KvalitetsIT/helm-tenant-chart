@@ -1,7 +1,7 @@
 projectDefaults:
   application:
     source:
-      repoURL: "https://github.com/example/tenant-repo"  # shared across all projects
+      repoURL: "https://github.com/example/tenant-repo.git"  # shared across all projects
       targetRevision: "main"
   resourceQuota:
     spec:

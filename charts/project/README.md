@@ -96,7 +96,7 @@ projectDefaults:
         requests.storage: "100Gi"
   application:
     source:
-      repoURL: https://github.com/example/tenant-repo
+      repoURL: https://github.com/example/tenant-repo.git
       targetRevision: main
 ```
 

@@ -5,7 +5,7 @@ tenantAppProjectName: acme-apps
 application:
   source:
     path: inventory/apps
-    repoURL: https://github.com/example/tenant-repo
+    repoURL: https://github.com/example/tenant-repo.git
     targetRevision: "main"
 
 resourceQuota:
