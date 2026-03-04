@@ -81,7 +81,7 @@ projects:
 
         # -- Optional. Git repository URL.
         # Overrides `projectDefaults.application.source.repoURL`.
-        repoURL: https://github.com/example/tenant-repo
+        repoURL: https://github.com/example/tenant-repo.git
 
         # -- Optional. Git branch, tag, or commit SHA.
         # Overrides `projectDefaults.application.source.targetRevision`.

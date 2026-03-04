@@ -4,17 +4,24 @@
 
 Deploys project infrastructure (Namespace, AppProject, app-of-apps Application, ResourceQuota, LimitRange, NetworkPolicy) for a tenant project
 
+**Homepage:** <https://github.com/KvalitetsIT>
+
 ## Maintainers
 
 | Name | Email | Url |
 | ---- | ------ | --- |
 | KvalitetsIT | <kithosting@kvalitetsit.dk> | <https://github.com/KvalitetsIT/helm-repo> |
 
+## Source Code
+
+* <https://github.com/KvalitetsIT/helm-tenant-chart>
+* <https://github.com/KvalitetsIT/helm-tenant-chart/tree/main/charts/project>
+
 ## Requirements
 
 | Repository | Name | Version |
 |------------|------|---------|
-| https://raw.githubusercontent.com/KvalitetsIT/helm-repo/master/ | templates | 1.0.0 |
+| https://raw.githubusercontent.com/KvalitetsIT/helm-repo/master/ | templates | 1.1.1 |
 
 ## Values
 
@@ -89,7 +96,7 @@ projectDefaults:
         requests.storage: "100Gi"
   application:
     source:
-      repoURL: https://github.com/example/tenant-repo
+      repoURL: https://github.com/example/tenant-repo.git
       targetRevision: main
 ```
 

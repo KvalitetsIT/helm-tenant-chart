@@ -4,17 +4,24 @@
 
 A Helm chart for creating a new tenant in the Kithosting platform
 
+**Homepage:** <https://github.com/KvalitetsIT>
+
 ## Maintainers
 
 | Name | Email | Url |
 | ---- | ------ | --- |
 | KvalitetsIT | <kithosting@kvalitetsit.dk> | <https://github.com/KvalitetsIT/helm-repo> |
 
+## Source Code
+
+* <https://github.com/KvalitetsIT/helm-tenant-chart>
+* <https://github.com/KvalitetsIT/helm-tenant-chart/tree/main/charts/tenant>
+
 ## Requirements
 
 | Repository | Name | Version |
 |------------|------|---------|
-| https://raw.githubusercontent.com/KvalitetsIT/helm-repo/master/ | templates | 1.0.0 |
+| https://raw.githubusercontent.com/KvalitetsIT/helm-repo/master/ | templates | 1.1.1 |
 
 ## Values
 
@@ -28,7 +35,7 @@ A Helm chart for creating a new tenant in the Kithosting platform
 | projectDefaults.projectApplication | object | See below | Default deployment config for `<project>-project` Applications (runs the project chart). Governed by the `<tenant>-projects` AppProject. Per-project override: `projects.<name>.projectApplication`. |
 | projectDefaults.projectApplication.source.repoURL | string | `"https://raw.githubusercontent.com/KvalitetsIT/helm-repo/master/"` | Required. OCI/Helm repository URL for the project chart. |
 | projectDefaults.projectApplication.source.chart | string | `"project"` | Required. Chart name within the repository. |
-| projectDefaults.projectApplication.source.targetRevision | string | `"1.*"` | Required. Chart version to deploy. Supports semver ranges. |
+| projectDefaults.projectApplication.source.targetRevision | string | `"1.0.*"` | Required. Chart version to deploy. Supports semver ranges. |
 | projectDefaults.projectApplication.syncPolicy | object | `{"automated":{"prune":true,"selfHeal":true}}` | Optional. Sync policy applied to all project Applications. |
 | projectDefaults.application | object | See below | Default config for `<project>-apps` Applications (app-of-apps). Governed by the `<tenant>-apps` AppProject. `source.path` cannot be set here — it must be provided per project. Per-project override: `projects.<name>.application`. |
 | projectDefaults.application.source.repoURL | string | `""` | Required. Default git repository URL for the app-of-apps. |
@@ -52,7 +59,7 @@ A Helm chart for creating a new tenant in the Kithosting platform
 | projects.\<project-name>.appProject.roles.developer.groups | list | `["{tenant}-developer"]` | Optional. AD/OIDC groups granted the developer role. |
 | projects.\<project-name>.appProject.roles.developer.policies | list | `["applications, get, {project}/{tenant}/*, allow","logs, get, {project}/*, allow","applications, update, {project}/{tenant}/*, allow","applications, update/*, {project}/{tenant}/*, allow","applications, delete, {project}/{tenant}/*, allow","applications, delete/*, {project}/{tenant}/*, allow","applications, sync, {project}/{tenant}/*, allow","applications, action/*, {project}/{tenant}/*, allow"]` | Optional. ArgoCD RBAC policy strings for the developer role. |
 | projects.\<project-name>.application.source.path | string | `"<project>/apps"` | Required. Path to the app-of-apps directory in the git repository. |
-| projects.\<project-name>.application.source.repoURL | string | `"https://github.com/example/tenant-repo"` | Optional. Git repository URL. Overrides `projectDefaults.application.source.repoURL`. |
+| projects.\<project-name>.application.source.repoURL | string | `"https://github.com/example/tenant-repo.git"` | Optional. Git repository URL. Overrides `projectDefaults.application.source.repoURL`. |
 | projects.\<project-name>.application.source.targetRevision | string | `"main"` | Optional. Git branch, tag, or commit SHA. Overrides `projectDefaults.application.source.targetRevision`. |
 | projects.\<project-name>.application.source.helm.valueFiles | list | `["values.yaml"]` | Optional. Helm value files. Overrides `projectDefaults.application.source.helm.valueFiles`. |
 | projects.\<project-name>.resourceQuota | object | `{"spec":{"hard":{"limits.cpu":"","limits.memory":"","requests.storage":""}}}` | Required if not set in projectDefaults. ResourceQuota hard limits. Overrides `projectDefaults.resourceQuota`. |
@@ -125,7 +132,7 @@ projects in `projectDefaults`; only the git path is set per project.
 projectDefaults:
   application:
     source:
-      repoURL: "https://github.com/example/tenant-repo"  # shared across all projects
+      repoURL: "https://github.com/example/tenant-repo.git"  # shared across all projects
       targetRevision: "main"
   resourceQuota:
     spec:
@@ -152,7 +159,7 @@ projects that need more or fewer resources.
 projectDefaults:
   application:
     source:
-      repoURL: "https://github.com/example/tenant-repo"
+      repoURL: "https://github.com/example/tenant-repo.git"
       targetRevision: "main"
   resourceQuota:
     spec:
@@ -208,7 +215,7 @@ roleGroups:
 projectDefaults:
   application:
     source:
-      repoURL: "https://github.com/example/tenant-repo"
+      repoURL: "https://github.com/example/tenant-repo.git"
       targetRevision: "main"
   resourceQuota:
     spec:
@@ -235,7 +242,7 @@ developer roles. Supports `{tenant}` and `{project}` placeholder substitution.
 projectDefaults:
   application:
     source:
-      repoURL: "https://github.com/example/tenant-repo"
+      repoURL: "https://github.com/example/tenant-repo.git"
       targetRevision: "main"
   resourceQuota:
     spec:
@@ -272,7 +279,7 @@ disables the `templates` subchart entirely — no default or custom NetworkPolic
 projectDefaults:
   application:
     source:
-      repoURL: "https://github.com/example/tenant-repo"
+      repoURL: "https://github.com/example/tenant-repo.git"
       targetRevision: "main"
   resourceQuota:
     spec:
@@ -306,7 +313,7 @@ Pin a specific project chart version for one project while leaving others on the
 projectDefaults:
   application:
     source:
-      repoURL: "https://github.com/example/tenant-repo"
+      repoURL: "https://github.com/example/tenant-repo.git"
       targetRevision: "main"
   resourceQuota:
     spec:
@@ -350,7 +357,7 @@ organization.
 projectDefaults:
   application:
     source:
-      repoURL: "https://github.com/example/tenant-repo"
+      repoURL: "https://github.com/example/tenant-repo.git"
       targetRevision: "main"
   resourceQuota:
     spec:
@@ -382,7 +389,7 @@ templates:
             argocd.argoproj.io/secret-type: repository
         data:
           type: git
-          url: https://github.com/example/tenant-repo
+          url: https://github.com/example/tenant-repo.git
           username: git
 
     # Repo-creds template — matches all repositories under a URL prefix.
