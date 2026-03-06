@@ -8,6 +8,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [1.1.1] - 2026-03-06
+
+### Fixed
+- Release workflow now includes only the current version's changelog section in the GitHub release notes instead of the full file. No chart changes.
+
 ## [1.1.0] - 2026-03-06
 
 ### Added

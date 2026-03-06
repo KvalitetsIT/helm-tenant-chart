@@ -8,3 +8,4 @@ namespace: default
 release-label: ct
 skip-clean-up: true
 check-version-increment: false
+use-helmignore: true
