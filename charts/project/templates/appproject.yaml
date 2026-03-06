@@ -6,7 +6,7 @@ apiVersion: argoproj.io/v1alpha1
 kind: AppProject
 metadata:
   name: {{ $projectNamespace }}
-  namespace: argocd
+  namespace: {{ .Values.argoNamespace }}
   labels:
     {{- include "project.labels" . | nindent 4 }}
   annotations:

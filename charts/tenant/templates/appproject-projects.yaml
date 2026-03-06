@@ -1,11 +1,12 @@
 {{- $tenantName := include "tenant.name" . }}
 {{- $projectAppProjectName := include "tenant.projectAppProjectName" . }}
+{{- $argoNamespace := .Values.argoNamespace }}
 ---
 apiVersion: argoproj.io/v1alpha1
 kind: AppProject
 metadata:
   name: {{ $projectAppProjectName }}
-  namespace: argocd
+  namespace: {{ $argoNamespace }}
   labels:
     {{- include "tenant.labels" . | nindent 4 }}
   annotations:
@@ -23,7 +24,7 @@ spec:
     - namespace: {{ include "tenant.projectNamespace" (list (include "tenant.name" $) $name) }}
       server: https://kubernetes.default.svc
   {{- end }}
-    - namespace: argocd
+    - namespace: {{ $argoNamespace }}
       server: https://kubernetes.default.svc
     - namespace: {{ $tenantName }}
       server: https://kubernetes.default.svc

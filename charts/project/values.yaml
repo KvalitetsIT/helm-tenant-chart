@@ -7,6 +7,9 @@ projectName: ""
 # -- Injected by the tenant chart. Name of the tenant AppProject.
 # @default -- ""
 tenantAppProjectName: ""
+# -- Injected by the tenant chart. Namespace where ArgoCD is installed.
+# @default -- argocd
+argoNamespace: argocd
 
 namespace:
   # -- Optional. Additional labels for the project Namespace.
