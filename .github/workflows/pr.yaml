@@ -21,8 +21,8 @@ jobs:
 
       - name: Check CHANGELOG.md is updated
         run: |
-          if ! git diff --name-only origin/${{ github.base_ref }}...HEAD | grep -q '^CHANGELOG\.md$'; then
-            echo "CHANGELOG.md was not updated. Please document your changes before merging."
+          if ! git diff --name-only origin/${{ github.base_ref }}...HEAD | grep -qE '^charts/(tenant|project)/CHANGELOG\.md$'; then
+            echo "Neither charts/tenant/CHANGELOG.md nor charts/project/CHANGELOG.md was updated. Please document your changes before merging."
             exit 1
           fi
 
