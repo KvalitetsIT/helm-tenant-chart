@@ -16,6 +16,7 @@ jobs:
       id-token: write
     outputs:
       chart: ${{ steps.info.outputs.chart }}
+      version: ${{ steps.info.outputs.version }}
 
     steps:
 
@@ -99,12 +100,20 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Extract changelog section
+        env:
+          CHART: ${{ needs.release.outputs.chart }}
+          VERSION: ${{ needs.release.outputs.version }}
+        run: |
+          awk "/^## \[${VERSION}\]/{found=1; next} found && /^## /{exit} found" \
+            "charts/${CHART}/CHANGELOG.md" > release-notes.md
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@5be0e66d93ac7ed76da52eca8bb058f665c3a5fe # v2.4.2
         with:
           tag_name: ${{ github.ref_name }}
           name: ${{ github.ref_name }}
-          body_path: charts/${{ needs.release.outputs.chart }}/CHANGELOG.md
+          body_path: release-notes.md
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
