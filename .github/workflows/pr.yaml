@@ -6,6 +6,26 @@ on:
 permissions: {}
 
 jobs:
+  changelog:
+    name: Validating changelog
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Check CHANGELOG.md is updated
+        run: |
+          if ! git diff --name-only origin/${{ github.base_ref }}...HEAD | grep -qE '^charts/(tenant|project)/CHANGELOG\.md$'; then
+            echo "Neither charts/tenant/CHANGELOG.md nor charts/project/CHANGELOG.md was updated. Please document your changes before merging."
+            exit 1
+          fi
+
   docs:
     name: Validating docs
     runs-on: ubuntu-latest
@@ -111,7 +131,7 @@ jobs:
       - name: Pre-create required namespaces
         if: steps.list-changed.outputs.changed == 'true'
         run: |
-          # argocd: AppProject resources are hardcoded to namespace: argocd
+          # argocd: AppProject resources default to namespace: argocd (configurable via argoNamespace)
           # acme:   Application resources go to namespace: .Values.tenantName (acme in all project CI files)
           kubectl create namespace argocd --dry-run=client -o yaml | kubectl apply -f -
           kubectl create namespace acme --dry-run=client -o yaml | kubectl apply -f -

@@ -1,6 +1,9 @@
 # -- Optional. Name override for the tenant.
 nameOverride: ""
 
+# -- Optional. Namespace where ArgoCD is installed. AppProject resources must live in the ArgoCD root namespace.
+argoNamespace: argocd
+
 # -- Optional. Map of role name → AD/OIDC group list applied globally to all AppProjects.
 # Acts as the lowest-precedence default — per-project `appProject.roles.<name>.groups` always wins.
 roleGroups: {}
