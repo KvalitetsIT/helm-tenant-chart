@@ -28,6 +28,7 @@ A Helm chart for creating a new tenant in the Kithosting platform
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | nameOverride | string | `""` | Optional. Name override for the tenant. |
+| argoNamespace | string | `"argocd"` | Optional. Namespace where ArgoCD is installed. AppProject resources must live in the ArgoCD root namespace. |
 | roleGroups | object | `{}` | Optional. Map of role name → AD/OIDC group list applied globally to all AppProjects. Acts as the lowest-precedence default — per-project `appProject.roles.<name>.groups` always wins. |
 | tenantNamespace.labels | object | `{}` | Optional. Additional labels for the tenant namespace. |
 | tenantNamespace.annotations | object | `{}` | Optional. Additional annotations for the tenant namespace. |
@@ -380,7 +381,7 @@ templates:
     # Repository secret — registers one specific git repository.
     acme-tenant-repo:
       metadata:
-        namespace: argocd       # must be argocd namespace regardless of release namespace
+        namespace: argocd       # must be argocd root namespace regardless of release namespace
       encryptedData:
         password: AgB...        # encrypt: kubeseal --raw --scope cluster-wide --namespace argocd
       template:
