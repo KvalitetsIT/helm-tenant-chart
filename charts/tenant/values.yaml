@@ -39,7 +39,7 @@ projectDefaults:
       # -- Required. Chart name within the repository.
       chart: project
       # -- Required. Chart version to deploy. Supports semver ranges.
-      targetRevision: "1.0.*"
+      targetRevision: "1.1.*"
     # -- Optional. Sync policy applied to all project Applications.
     syncPolicy:
       automated:
