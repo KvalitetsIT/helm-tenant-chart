@@ -15,6 +15,6 @@ maintainers:
     url: https://github.com/KvalitetsIT/helm-repo
 dependencies:
   - name: templates
-    version: "1.1.1"
+    version: "1.1.2"
     repository: https://raw.githubusercontent.com/KvalitetsIT/helm-repo/master/
     condition: templates.enabled

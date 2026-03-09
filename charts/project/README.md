@@ -21,7 +21,7 @@ Deploys project infrastructure (Namespace, AppProject, app-of-apps Application, 
 
 | Repository | Name | Version |
 |------------|------|---------|
-| https://raw.githubusercontent.com/KvalitetsIT/helm-repo/master/ | templates | 1.1.1 |
+| https://raw.githubusercontent.com/KvalitetsIT/helm-repo/master/ | templates | 1.1.2 |
 
 ## Values
 

@@ -21,7 +21,7 @@ A Helm chart for creating a new tenant in the Kithosting platform
 
 | Repository | Name | Version |
 |------------|------|---------|
-| https://raw.githubusercontent.com/KvalitetsIT/helm-repo/master/ | templates | 1.1.1 |
+| https://raw.githubusercontent.com/KvalitetsIT/helm-repo/master/ | templates | 1.1.2 |
 
 ## Values
 
