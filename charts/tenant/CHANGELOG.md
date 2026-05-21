@@ -8,6 +8,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-05-21
+
+### Changed
+- Bumped `templates` chart dependency from `1.1.2` to `2.1.1`.
+
 ## [1.1.3] - 2026-03-06
 
 ### Changed

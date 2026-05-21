@@ -8,6 +8,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-05-21
+
+### Added
+- `appProject.sourceRepos` — optional list of additional source repositories for the per-project AppProject. `application.source.repoURL` is always included automatically.
+
+### Changed
+- Bumped `templates` chart dependency from `1.1.2` to `2.1.1`.
+
 ## [1.1.2] - 2026-03-06
 
 ### Changed
