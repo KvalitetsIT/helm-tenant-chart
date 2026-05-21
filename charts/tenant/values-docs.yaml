@@ -24,6 +24,10 @@ projects:
     # Overrides `projectDefaults.appProject`.
     # @default -- See below
     appProject:
+      # -- Optional. Additional source repositories allowed in the per-project AppProject.
+      # `application.source.repoURL` is always included automatically.
+      # Overrides `projectDefaults.appProject.sourceRepos`.
+      sourceRepos: []
       # -- Optional. Kubernetes resource kinds allowed in the project namespace.
       # Wildcard allows all — tighten per project as needed.
       # Overrides `projectDefaults.appProject.namespaceResourceWhitelist`.

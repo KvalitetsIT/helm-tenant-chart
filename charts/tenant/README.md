@@ -1,6 +1,6 @@
 # tenant
 
-![Version: 1.0.0](https://img.shields.io/badge/Version-1.0.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.0.0](https://img.shields.io/badge/AppVersion-1.0.0-informational?style=flat-square)
+![Version: 1.2.0](https://img.shields.io/badge/Version-1.2.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.0.0](https://img.shields.io/badge/AppVersion-1.0.0-informational?style=flat-square)
 
 A Helm chart for creating a new tenant in the Kithosting platform
 
@@ -21,7 +21,7 @@ A Helm chart for creating a new tenant in the Kithosting platform
 
 | Repository | Name | Version |
 |------------|------|---------|
-| https://raw.githubusercontent.com/KvalitetsIT/helm-repo/master/ | templates | 1.1.2 |
+| https://raw.githubusercontent.com/KvalitetsIT/helm-repo/master/ | templates | 2.1.1 |
 
 ## Values
 
@@ -50,6 +50,7 @@ A Helm chart for creating a new tenant in the Kithosting platform
 | projects.\<project-name>.namespace | object | `{"annotations":{},"labels":{}}` | Optional. Labels and annotations for the project namespace. Overrides `projectDefaults.namespace`. |
 | projects.\<project-name>.projectApplication.source.targetRevision | string | `"1.*"` | Optional. Pin a specific project chart version for this project. Overrides `projectDefaults.projectApplication.source.targetRevision`. |
 | projects.\<project-name>.appProject | object | See below | Optional. Additional RBAC roles for the per-project AppProject. Merged on top of the project chart's default roles (viewer, developer). Supports `{tenant}` and `{project}` placeholder substitution. Overrides `projectDefaults.appProject`. |
+| projects.\<project-name>.appProject.sourceRepos | list | `[]` | Optional. Additional source repositories allowed in the per-project AppProject. `application.source.repoURL` is always included automatically. Overrides `projectDefaults.appProject.sourceRepos`. |
 | projects.\<project-name>.appProject.namespaceResourceWhitelist | list | `[{"group":"*","kind":"*"}]` | Optional. Kubernetes resource kinds allowed in the project namespace. Wildcard allows all — tighten per project as needed. Overrides `projectDefaults.appProject.namespaceResourceWhitelist`. |
 | projects.\<project-name>.appProject.namespaceResourceBlacklist | list | `[{"group":"rbac.authorization.k8s.io","kind":"Role"},{"group":"rbac.authorization.k8s.io","kind":"RoleBinding"},{"group":"","kind":"ResourceQuota"},{"group":"","kind":"LimitRange"}]` | Optional. Kubernetes resource kinds explicitly denied in the project namespace. Prevents tenants from managing resources that are owned by the tenant chart. Overrides `projectDefaults.appProject.namespaceResourceBlacklist`. |
 | projects.\<project-name>.appProject.roles | object | See below | Optional. RBAC roles for the AppProject. Supports `{tenant}` and `{project}` placeholder substitution. Overrides `projectDefaults.appProject.roles`. |

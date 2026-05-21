@@ -2,7 +2,7 @@ apiVersion: v2
 name: project
 description: Deploys project infrastructure (Namespace, AppProject, app-of-apps Application, ResourceQuota, LimitRange, NetworkPolicy) for a tenant project
 type: application
-version: 1.0.0
+version: 1.2.0
 appVersion: 1.0.0
 home: https://github.com/KvalitetsIT
 icon: https://raw.githubusercontent.com/KvalitetsIT/.github/refs/heads/main/assets/favicon.png
@@ -15,6 +15,6 @@ maintainers:
     url: https://github.com/KvalitetsIT/helm-repo
 dependencies:
   - name: templates
-    version: "1.1.2"
+    version: "2.1.1"
     repository: https://raw.githubusercontent.com/KvalitetsIT/helm-repo/master/
     condition: templates.enabled
