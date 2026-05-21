@@ -1,6 +1,9 @@
 all: lint docs
 
-lint:
+clean-locks:
+	find ./charts -maxdepth 2 -name "Chart.lock" -delete
+
+lint: clean-locks
 	docker run --rm --name chart-testing -w /data -v $(PWD):/data quay.io/helmpack/chart-testing:v3.14.0 \
 		sh -c "helm repo add kvalitetsit https://raw.githubusercontent.com/KvalitetsIT/helm-repo/master/ && ct lint --config /data/ct.yaml"
 

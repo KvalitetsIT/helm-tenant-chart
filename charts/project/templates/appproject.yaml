@@ -19,6 +19,9 @@ spec:
     - {{ .Values.tenantName }}
   sourceRepos:
     - {{ required "application.source.repoURL is required" .Values.application.source.repoURL }}
+  {{- range $spec.sourceRepos }}
+    - {{ . | quote }}
+  {{- end }}
   destinations:
     - namespace: {{ $projectNamespace }}
       server: https://kubernetes.default.svc

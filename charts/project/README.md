@@ -1,6 +1,6 @@
 # project
 
-![Version: 1.0.0](https://img.shields.io/badge/Version-1.0.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.0.0](https://img.shields.io/badge/AppVersion-1.0.0-informational?style=flat-square)
+![Version: 1.2.0](https://img.shields.io/badge/Version-1.2.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.0.0](https://img.shields.io/badge/AppVersion-1.0.0-informational?style=flat-square)
 
 Deploys project infrastructure (Namespace, AppProject, app-of-apps Application, ResourceQuota, LimitRange, NetworkPolicy) for a tenant project
 
@@ -21,7 +21,7 @@ Deploys project infrastructure (Namespace, AppProject, app-of-apps Application, 
 
 | Repository | Name | Version |
 |------------|------|---------|
-| https://raw.githubusercontent.com/KvalitetsIT/helm-repo/master/ | templates | 1.1.2 |
+| https://raw.githubusercontent.com/KvalitetsIT/helm-repo/master/ | templates | 2.1.1 |
 
 ## Values
 
@@ -34,6 +34,7 @@ Deploys project infrastructure (Namespace, AppProject, app-of-apps Application, 
 | namespace.labels | object | `{}` | Optional. Additional labels for the project Namespace. |
 | namespace.annotations | object | `{}` | Optional. Additional annotations for the project Namespace. |
 | appProject | object | See below | Configuration for the per-project AppProject (`<tenant>-<project>`). Supports `{tenant}` and `{project}` placeholder substitution in descriptions, groups, and policies. Override per project via `projects.<name>.appProject` in the tenant chart. |
+| appProject.sourceRepos | list | `[]` | Optional. Additional source repositories allowed in the AppProject. `application.source.repoURL` is always included automatically. Override or extend per project via `projects.<name>.appProject.sourceRepos` in the tenant chart. |
 | appProject.namespaceResourceWhitelist | list | `[{"group":"*","kind":"*"}]` | Optional. Kubernetes resource kinds allowed in the project namespace. Wildcard allows all — tighten per project as needed. |
 | appProject.namespaceResourceBlacklist | list | `[{"group":"rbac.authorization.k8s.io","kind":"Role"},{"group":"rbac.authorization.k8s.io","kind":"RoleBinding"},{"group":"","kind":"ResourceQuota"},{"group":"","kind":"LimitRange"}]` | Optional. Kubernetes resource kinds explicitly denied in the project namespace. Prevents tenants from managing resources that are owned by the tenant chart. |
 | appProject.roles | object | See below | Optional. RBAC roles for the AppProject. Supports `{tenant}` and `{project}` placeholder substitution. Override or extend per project via `projects.<name>.appProject.roles` in the tenant chart. |
