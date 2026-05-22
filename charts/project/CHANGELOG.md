@@ -8,6 +8,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [1.2.1] - 2026-05-22
+
+### Changed
+- `appProject.sourceRepos` now always includes `https://raw.githubusercontent.com/KvalitetsIT/helm-repo/master/` by default, and entries with an `oci://` prefix are automatically duplicated without the prefix to work around ArgoCD's inconsistent OCI URL matching against `sourceRepos`.
+
 ## [1.2.0] - 2026-05-21
 
 ### Added

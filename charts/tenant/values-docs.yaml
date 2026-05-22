@@ -25,7 +25,9 @@ projects:
     # @default -- See below
     appProject:
       # -- Optional. Additional source repositories allowed in the per-project AppProject.
-      # `application.source.repoURL` is always included automatically.
+      # `application.source.repoURL` and the KvalitetsIT helm repo are always included automatically.
+      # Entries with an `oci://` prefix are added twice — once with the prefix and once
+      # without — as a workaround for ArgoCD's inconsistent OCI URL matching.
       # Overrides `projectDefaults.appProject.sourceRepos`.
       sourceRepos: []
       # -- Optional. Kubernetes resource kinds allowed in the project namespace.
