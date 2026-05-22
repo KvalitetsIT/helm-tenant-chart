@@ -23,7 +23,10 @@ namespace:
 # @default -- See below
 appProject:
   # -- Optional. Additional source repositories allowed in the AppProject.
-  # `application.source.repoURL` is always included automatically.
+  # `application.source.repoURL` and `https://raw.githubusercontent.com/KvalitetsIT/helm-repo/master/`
+  # are always included automatically.
+  # Entries with an `oci://` prefix are added twice — once with the prefix and once
+  # without — as a workaround for ArgoCD's inconsistent OCI URL matching against `sourceRepos`.
   # Override or extend per project via `projects.<name>.appProject.sourceRepos` in the tenant chart.
   sourceRepos: []
   # -- Optional. Kubernetes resource kinds allowed in the project namespace.

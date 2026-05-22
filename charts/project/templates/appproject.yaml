@@ -18,9 +18,13 @@ spec:
   sourceNamespaces:
     - {{ .Values.tenantName }}
   sourceRepos:
-    - {{ required "application.source.repoURL is required" .Values.application.source.repoURL }}
+    - {{ required "application.source.repoURL is required" .Values.application.source.repoURL | quote }}
+    - "https://raw.githubusercontent.com/KvalitetsIT/helm-repo/master/"
   {{- range $spec.sourceRepos }}
     - {{ . | quote }}
+    {{- if hasPrefix "oci://" . }}
+    - {{ trimPrefix "oci://" . | quote }}
+    {{- end }}
   {{- end }}
   destinations:
     - namespace: {{ $projectNamespace }}
