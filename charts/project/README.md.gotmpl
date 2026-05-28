@@ -30,9 +30,13 @@ the `<tenant>-projects` AppProject, ensuring values are injected and controlled 
 | `Application` | `<project>-apps` | always |
 | `ResourceQuota` | `resource-quota` | `resourceQuota.enabled` |
 | `LimitRange` | `limit-range` | `limitRange.enabled` |
-| `NetworkPolicy` | `default-deny` | `templates.enabled` |
-| `CiliumNetworkPolicy` | `allow-kube-dns` | `templates.enabled` |
-| `NetworkPolicy` | `allow-within-namespace` | `templates.enabled` |
+| `ConfigMap` | `waypoint-options` | `waypoint.enabled` |
+| `Gateway` | `waypoint` | `waypoint.enabled` |
+| `NetworkPolicy` | `waypoint` | `waypoint.enabled` |
+| `NetworkPolicy` | `ingressgateway-acme-solver` | `waypoint.enabled` |
+| `NetworkPolicy` | `default-deny` | `defaultNetworkPolicies.enabled` + `defaultNetworkPolicies.networkPolicies.default-deny.enabled` |
+| `NetworkPolicy` | `allow-within-namespace` | `defaultNetworkPolicies.enabled` + `defaultNetworkPolicies.networkPolicies.allow-within-namespace.enabled` |
+| `CiliumNetworkPolicy` or `NetworkPolicy` | `allow-kube-dns` | `defaultNetworkPolicies.enabled` + `defaultNetworkPolicies.ciliumNetworkPolicies.allow-kube-dns.enabled` (type chosen at render time based on `cilium.io/v2` API availability) |
 | `NetworkPolicy` | `<key>` (extra) | `templates.networkPolicies` |
 | `CiliumNetworkPolicy` | `<key>` (extra) | `templates.ciliumNetworkPolicies` |
 
@@ -81,8 +85,8 @@ projects:
 ## Cross-namespace NetworkPolicies
 
 The project chart includes the [`templates`](../../helm-templates/charts/templates/) subchart
-which renders extra `NetworkPolicy` and `CiliumNetworkPolicy` resources from a values map.
-Use it to express cross-namespace connectivity on top of the default policies.
+for adding extra `NetworkPolicy` and `CiliumNetworkPolicy` resources beyond the project defaults.
+Use it to express cross-namespace connectivity.
 
 Configure extra policies under the `templates` key. Each map key becomes the resource name.
 

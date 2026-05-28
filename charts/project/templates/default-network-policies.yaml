@@ -1,0 +1,26 @@
+{{- if and .Values.tenantName .Values.projectName }}
+{{- if .Values.templates.enabled }}
+{{- if ne .Values.defaultNetworkPolicies.enabled false }}
+{{- $cnps := .Values.defaultNetworkPolicies.ciliumNetworkPolicies | default dict }}
+{{- range $name, $value := (.Values.defaultNetworkPolicies.networkPolicies | default dict) }}
+{{- if and $value (ne $value.enabled false) }}
+{{- if not (hasKey $cnps $name) }}
+{{- include "templates.networkPolicy" (dict "root" $ "name" $name "value" $value) }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- range $name, $value := $cnps }}
+{{- if and $value (ne $value.enabled false) }}
+{{- if $.Capabilities.APIVersions.Has "cilium.io/v2" }}
+{{- include "templates.ciliumNetworkPolicy" (dict "root" $ "name" $name "value" $value) }}
+{{- else }}
+{{- $fallback := index ($.Values.defaultNetworkPolicies.networkPolicies | default dict) $name }}
+{{- if and $fallback (ne $fallback.enabled false) }}
+{{- include "templates.networkPolicy" (dict "root" $ "name" $name "value" $fallback) }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}

@@ -20,7 +20,7 @@ namespace:
 # -- Configuration for the per-project AppProject (`<tenant>-<project>`).
 # Supports `{tenant}` and `{project}` placeholder substitution in descriptions, groups, and policies.
 # Override per project via `projects.<name>.appProject` in the tenant chart.
-# @default -- See below
+# @default -- See [values.yaml](values.yaml)
 appProject:
   # -- Optional. Additional source repositories allowed in the AppProject.
   # `application.source.repoURL` and `https://raw.githubusercontent.com/KvalitetsIT/helm-repo/master/`
@@ -48,7 +48,7 @@ appProject:
   # -- Optional. RBAC roles for the AppProject.
   # Supports `{tenant}` and `{project}` placeholder substitution.
   # Override or extend per project via `projects.<name>.appProject.roles` in the tenant chart.
-  # @default -- See below
+  # @default -- See [values.yaml](values.yaml)
   roles:
     # -- Optional. Read-only role — grants view and log access to project workloads.
     viewer:
@@ -80,7 +80,7 @@ appProject:
 # -- Configuration for the app-of-apps Application (`<project>-apps`).
 # `source.repoURL`, `source.path`, and `source.targetRevision` are injected by the tenant chart.
 # Override per project via `projects.<name>.application` in the tenant chart.
-# @default -- See below
+# @default -- See [values.yaml](values.yaml)
 application:
   source:
     # -- Required. Git repository URL for the app-of-apps. Injected by the tenant chart.
@@ -91,7 +91,7 @@ application:
     targetRevision: ""
     helm:
       # -- Optional. Helm value files passed to the app-of-apps Application.
-      # @default -- [values.yaml]
+      # @default -- See [values.yaml](values.yaml)
       valueFiles:
         - values.yaml
   # -- Optional. Sync policy for the app-of-apps Application.
@@ -122,24 +122,172 @@ limitRange:
           cpu: 25m
           memory: 32Mi
 
-# -- Optional. Values passed to the `templates` subchart.
-# Set `enabled: false` to disable the subchart entirely — no NetworkPolicies are rendered at all.
-# Add entries to `networkPolicies` or `ciliumNetworkPolicies` to create extra policies (e.g. cross-namespace connectivity).
-# @default -- See below
-templates:
-  # -- Optional. Enable or disable the `templates` subchart.
-  # When false, no NetworkPolicies (default or custom) are rendered.
+# -- Optional. Configuration for the Istio Waypoint proxy resources deployed in the project namespace.
+# When enabled, renders all entries in `waypoint.resources` and `waypoint.networkPolicies`.
+# Disable per project via `projects.<name>.waypoint.enabled: false` in the tenant chart.
+# @default -- See [values.yaml](values.yaml)
+waypoint:
+  # -- Optional. Enable or disable all Istio Waypoint resources.
   enabled: true
-  # @default -- See below
+  # -- Optional. Map of arbitrary Kubernetes resources to render when `waypoint.enabled` is true.
+  # Each key becomes the default `metadata.name`. Rendered via `templates.resource`.
+  # @default -- See [values.yaml](values.yaml)
+  resources:
+    # -- ConfigMap passed to the Gateway parametersRef. Controls topology spread, HPA, and PDB for waypoint pods.
+    # @default -- See [values.yaml](values.yaml)
+    waypoint-options:
+      enabled: true
+      apiVersion: v1
+      kind: ConfigMap
+      data:
+        deployment: |
+          spec:
+            template:
+              spec:
+                topologySpreadConstraints:
+                  - maxSkew: 1
+                    topologyKey: kubernetes.io/hostname
+                    whenUnsatisfiable: ScheduleAnyway
+                    labelSelector:
+                      matchLabels:
+                        gateway.networking.k8s.io/gateway-name: waypoint
+        horizontalPodAutoscaler: |
+          spec:
+            minReplicas: 2
+            maxReplicas: 5
+        podDisruptionBudget: |
+          spec:
+            minAvailable: 1
+    # -- Istio Waypoint Gateway resource.
+    # @default -- See [values.yaml](values.yaml)
+    waypoint:
+      enabled: true
+      apiVersion: gateway.networking.k8s.io/v1
+      kind: Gateway
+      metadata:
+        labels:
+          istio.io/waypoint-for: service
+      spec:
+        gatewayClassName: istio-waypoint
+        infrastructure:
+          parametersRef:
+            group: ""
+            kind: ConfigMap
+            name: waypoint-options
+        listeners:
+          - name: mesh
+            port: 15008
+            protocol: HBONE
+  # -- Optional. Map of NetworkPolicy resources to render when `waypoint.enabled` is true.
+  # Each key becomes the NetworkPolicy name. Rendered via `templates.networkPolicy`.
+  # @default -- See [values.yaml](values.yaml)
+  networkPolicies:
+    # -- NetworkPolicy for waypoint pods. Allows HBONE ingress, Prometheus scraping, and egress to istiod, kube-dns, and same-namespace pods.
+    # @default -- See [values.yaml](values.yaml)
+    waypoint:
+      enabled: true
+      podSelector:
+        matchLabels:
+          gateway.networking.k8s.io/gateway-name: waypoint
+      policyTypes:
+        - Ingress
+        - Egress
+      ingress:
+        # HBONE tunnel port — inbound traffic from ingressgateway
+        - from:
+            - namespaceSelector:
+                matchLabels:
+                  kubernetes.io/metadata.name: istio-ingress
+              podSelector:
+                matchLabels:
+                  gateway.networking.k8s.io/gateway-name: ingressgateway
+          ports:
+            - port: 15008
+              protocol: TCP
+        # Metrics endpoint — scraped by Prometheus in monitoring namespace
+        - from:
+            - namespaceSelector:
+                matchLabels:
+                  kubernetes.io/metadata.name: monitoring
+              podSelector:
+                matchLabels:
+                  app.kubernetes.io/name: prometheus
+          ports:
+            - port: 15020
+              protocol: TCP
+      egress:
+        # Allow egress to pods in the same namespace (backend app pods)
+        - to:
+            - podSelector: {}
+        # xDS config from istiod
+        - to:
+            - namespaceSelector:
+                matchLabels:
+                  kubernetes.io/metadata.name: istio-system
+              podSelector:
+                matchLabels:
+                  app: istiod
+          ports:
+            - port: 15012
+              protocol: TCP
+        # DNS — kube-dns in kube-system
+        - to:
+            - namespaceSelector:
+                matchLabels:
+                  kubernetes.io/metadata.name: kube-system
+              podSelector:
+                matchLabels:
+                  k8s-app: kube-dns
+          ports:
+            - port: 53
+              protocol: UDP
+            - port: 53
+              protocol: TCP
+    # -- NetworkPolicy allowing ingressgateway to reach cert-manager ACME HTTP-01 solver pods.
+    # @default -- See [values.yaml](values.yaml)
+    ingressgateway-acme-solver:
+      enabled: true
+      podSelector:
+        matchLabels:
+          acme.cert-manager.io/http01-solver: "true"
+      policyTypes:
+        - Ingress
+      ingress:
+        - from:
+            - namespaceSelector:
+                matchLabels:
+                  kubernetes.io/metadata.name: istio-ingress
+              podSelector:
+                matchLabels:
+                  gateway.networking.k8s.io/gateway-name: ingressgateway
+          ports:
+            - port: 8089
+              protocol: TCP
+
+# -- Optional. Default network policies deployed in every project namespace.
+# Rendered directly by the project chart via the `templates` named-template defines.
+# Disable the whole bundle with `enabled: false`, or opt out of individual entries with `enabled: false` on the entry.
+# @default -- See [values.yaml](values.yaml)
+defaultNetworkPolicies:
+  # -- Optional. Enable or disable all default network policies.
+  enabled: true
+  # -- Optional. Default NetworkPolicy resources. Each key becomes the resource name.
+  # Keys that also exist in `ciliumNetworkPolicies` are treated as fallbacks:
+  # rendered only when `cilium.io/v2` is not available.
+  # @default -- See [values.yaml](values.yaml)
   networkPolicies:
     # -- Default deny-all policy. Blocks all ingress and egress by default.
+    # @default -- See [values.yaml](values.yaml)
     default-deny:
+      enabled: true
       podSelector: {}
       policyTypes:
         - Ingress
         - Egress
     # -- Allow pod-to-pod communication within the same namespace.
+    # @default -- See [values.yaml](values.yaml)
     allow-within-namespace:
+      enabled: true
       podSelector: {}
       policyTypes:
         - Ingress
@@ -150,10 +298,34 @@ templates:
       egress:
         - to:
             - podSelector: {}
-  # @default -- See below
-  ciliumNetworkPolicies:
-    # -- Allow DNS egress to kube-dns. Required for Cilium FQDN-based policies.
+    # -- Fallback DNS egress policy used when `cilium.io/v2` is not available.
+    # Ignored when Cilium is present — `ciliumNetworkPolicies.allow-kube-dns` is used instead.
+    # @default -- See [values.yaml](values.yaml)
     allow-kube-dns:
+      enabled: true
+      podSelector: {}
+      policyTypes:
+        - Egress
+      egress:
+        - to:
+            - ipBlock:
+                cidr: 169.254.20.10/32
+            - ipBlock:
+                cidr: 10.43.0.10/32
+          ports:
+            - port: 53
+              protocol: UDP
+            - port: 53
+              protocol: TCP
+  # -- Optional. Default CiliumNetworkPolicy resources. Each key becomes the resource name.
+  # When `cilium.io/v2` is not available, the matching `networkPolicies` entry is rendered instead.
+  # @default -- See [values.yaml](values.yaml)
+  ciliumNetworkPolicies:
+    # -- DNS egress policy to kube-dns. Rendered as a CiliumNetworkPolicy when Cilium is available,
+    # falls back to `networkPolicies.allow-kube-dns` otherwise.
+    # @default -- See [values.yaml](values.yaml)
+    allow-kube-dns:
+      enabled: true
       endpointSelector: {}
       egress:
         - toEndpoints:
@@ -167,3 +339,20 @@ templates:
               rules:
                 dns:
                   - matchPattern: "*"
+
+# -- Optional. Values passed to the `templates` subchart for additional resources.
+# Use `networkPolicies` and `ciliumNetworkPolicies` to add extra policies beyond the project defaults
+# (e.g. cross-namespace connectivity). Set `enabled: false` to disable the subchart entirely.
+# @default -- See [values.yaml](values.yaml)
+templates:
+  # -- Optional. Enable or disable the `templates` subchart.
+  # When false, no additional resources are rendered and the named-template defines are unavailable.
+  enabled: true
+  # -- Optional. Additional NetworkPolicy resources. Each key becomes the resource name.
+  networkPolicies: {}
+  # -- Optional. Additional CiliumNetworkPolicy resources. Each key becomes the resource name.
+  ciliumNetworkPolicies: {}
+  # -- Optional. Additional SealedSecret resources. Each key becomes the resource name.
+  sealedSecrets: {}
+  # -- Optional. Additional arbitrary resources rendered via `templates.resource`. Each key becomes the default `metadata.name`.
+  resources: {}

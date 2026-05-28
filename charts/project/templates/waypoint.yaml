@@ -1,0 +1,14 @@
+{{- if and .Values.tenantName .Values.projectName }}
+{{- if .Values.waypoint.enabled }}
+{{- range $name, $value := (.Values.waypoint.resources | default dict) }}
+{{- if ne ($value.enabled) false }}
+{{- include "templates.resource" (dict "root" $ "name" $name "value" $value) }}
+{{- end }}
+{{- end }}
+{{- range $name, $value := (.Values.waypoint.networkPolicies | default dict) }}
+{{- if and $value (ne $value.enabled false) }}
+{{- include "templates.networkPolicy" (dict "root" $ "name" $name "value" $value) }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
