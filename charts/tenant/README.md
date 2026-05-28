@@ -32,17 +32,17 @@ A Helm chart for creating a new tenant in the Kithosting platform
 | roleGroups | object | `{}` | Optional. Map of role name → AD/OIDC group list applied globally to all AppProjects. Acts as the lowest-precedence default — per-project `appProject.roles.<name>.groups` always wins. |
 | tenantNamespace.labels | object | `{}` | Optional. Additional labels for the tenant namespace. |
 | tenantNamespace.annotations | object | `{}` | Optional. Additional annotations for the tenant namespace. |
-| projectDefaults | object | See below | Shared defaults applied to every project. All keys are deep-merged with `projects.<name>` — project values win. See the [project chart values](../project/README.md#values) for the full schema, including `limitRange`, `templates`, `appProject`, and `namespace`. |
-| projectDefaults.projectApplication | object | See below | Default deployment config for `<project>-project` Applications (runs the project chart). Governed by the `<tenant>-projects` AppProject. Per-project override: `projects.<name>.projectApplication`. |
+| projectDefaults | object | See [values.yaml](values.yaml) | Shared defaults applied to every project. All keys are deep-merged with `projects.<name>` — project values win. See the [project chart values](../project/README.md#values) for the full schema, including `limitRange`, `templates`, `appProject`, and `namespace`. |
+| projectDefaults.projectApplication | object | See [values.yaml](values.yaml) | Default deployment config for `<project>-project` Applications (runs the project chart). Governed by the `<tenant>-projects` AppProject. Per-project override: `projects.<name>.projectApplication`. |
 | projectDefaults.projectApplication.source.repoURL | string | `"https://raw.githubusercontent.com/KvalitetsIT/helm-repo/master/"` | Required. OCI/Helm repository URL for the project chart. |
 | projectDefaults.projectApplication.source.chart | string | `"project"` | Required. Chart name within the repository. |
 | projectDefaults.projectApplication.source.targetRevision | string | `"2.0.*"` | Required. Chart version to deploy. Supports semver ranges. |
 | projectDefaults.projectApplication.syncPolicy | object | `{"automated":{"prune":true,"selfHeal":true}}` | Optional. Sync policy applied to all project Applications. |
-| projectDefaults.application | object | See below | Default config for `<project>-apps` Applications (app-of-apps). Governed by the `<tenant>-apps` AppProject. `source.path` cannot be set here — it must be provided per project. Per-project override: `projects.<name>.application`. |
+| projectDefaults.application | object | See [values.yaml](values.yaml) | Default config for `<project>-apps` Applications (app-of-apps). Governed by the `<tenant>-apps` AppProject. `source.path` cannot be set here — it must be provided per project. Per-project override: `projects.<name>.application`. |
 | projectDefaults.application.source.repoURL | string | `""` | Required. Default git repository URL for the app-of-apps. |
 | projectDefaults.application.source.targetRevision | string | `""` | Required. Default git branch, tag, or commit SHA. |
 | projectDefaults.application.source.helm | object | `{"valueFiles":["values.yaml"]}` | Optional. Default Helm value files passed to the app-of-apps Application. Per-project overrides replace this list entirely. |
-| projectDefaults.resourceQuota | object | See below | Default ResourceQuota passed to every project via the project chart. `limits.cpu`, `limits.memory`, and `requests.storage` have no project chart defaults — they must be set here or per project. Per-project override: `projects.<name>.resourceQuota`. |
+| projectDefaults.resourceQuota | object | See [values.yaml](values.yaml) | Default ResourceQuota passed to every project via the project chart. `limits.cpu`, `limits.memory`, and `requests.storage` have no project chart defaults — they must be set here or per project. Per-project override: `projects.<name>.resourceQuota`. |
 | projectDefaults.resourceQuota.spec.hard."limits.cpu" | string | `""` | Required |
 | projectDefaults.resourceQuota.spec.hard."limits.memory" | string | `""` | Required |
 | projectDefaults.resourceQuota.spec.hard."requests.storage" | string | `""` | Required |

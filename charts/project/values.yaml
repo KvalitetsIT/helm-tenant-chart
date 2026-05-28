@@ -20,7 +20,7 @@ namespace:
 # -- Configuration for the per-project AppProject (`<tenant>-<project>`).
 # Supports `{tenant}` and `{project}` placeholder substitution in descriptions, groups, and policies.
 # Override per project via `projects.<name>.appProject` in the tenant chart.
-# @default -- See below
+# @default -- See [values.yaml](values.yaml)
 appProject:
   # -- Optional. Additional source repositories allowed in the AppProject.
   # `application.source.repoURL` and `https://raw.githubusercontent.com/KvalitetsIT/helm-repo/master/`
@@ -48,7 +48,7 @@ appProject:
   # -- Optional. RBAC roles for the AppProject.
   # Supports `{tenant}` and `{project}` placeholder substitution.
   # Override or extend per project via `projects.<name>.appProject.roles` in the tenant chart.
-  # @default -- See below
+  # @default -- See [values.yaml](values.yaml)
   roles:
     # -- Optional. Read-only role — grants view and log access to project workloads.
     viewer:
@@ -80,7 +80,7 @@ appProject:
 # -- Configuration for the app-of-apps Application (`<project>-apps`).
 # `source.repoURL`, `source.path`, and `source.targetRevision` are injected by the tenant chart.
 # Override per project via `projects.<name>.application` in the tenant chart.
-# @default -- See below
+# @default -- See [values.yaml](values.yaml)
 application:
   source:
     # -- Required. Git repository URL for the app-of-apps. Injected by the tenant chart.
@@ -91,7 +91,7 @@ application:
     targetRevision: ""
     helm:
       # -- Optional. Helm value files passed to the app-of-apps Application.
-      # @default -- [values.yaml]
+      # @default -- See [values.yaml](values.yaml)
       valueFiles:
         - values.yaml
   # -- Optional. Sync policy for the app-of-apps Application.
@@ -125,13 +125,13 @@ limitRange:
 # -- Optional. Configuration for the Istio Waypoint proxy resources deployed in the project namespace.
 # When enabled, renders all entries in `waypoint.resources` and `waypoint.networkPolicies`.
 # Disable per project via `projects.<name>.waypoint.enabled: false` in the tenant chart.
-# @default -- See below
+# @default -- See [values.yaml](values.yaml)
 waypoint:
   # -- Optional. Enable or disable all Istio Waypoint resources.
   enabled: true
   # -- Optional. Map of arbitrary Kubernetes resources to render when `waypoint.enabled` is true.
   # Each key becomes the default `metadata.name`. Rendered via `templates.resource`.
-  # @default -- See below
+  # @default -- See [values.yaml](values.yaml)
   resources:
     # -- ConfigMap passed to the Gateway parametersRef. Controls topology spread, HPA, and PDB for waypoint pods.
     waypoint-options:
@@ -178,7 +178,7 @@ waypoint:
             protocol: HBONE
   # -- Optional. Map of NetworkPolicy resources to render when `waypoint.enabled` is true.
   # Each key becomes the NetworkPolicy name. Rendered via `templates.networkPolicy`.
-  # @default -- See below
+  # @default -- See [values.yaml](values.yaml)
   networkPolicies:
     # -- NetworkPolicy for waypoint pods. Allows HBONE ingress, Prometheus scraping, and egress to istiod, kube-dns, and same-namespace pods.
     waypoint:
@@ -263,14 +263,14 @@ waypoint:
 # -- Optional. Default network policies deployed in every project namespace.
 # Rendered directly by the project chart via the `templates` named-template defines.
 # Disable the whole bundle with `enabled: false`, or opt out of individual entries with `enabled: false` on the entry.
-# @default -- See below
+# @default -- See [values.yaml](values.yaml)
 defaultNetworkPolicies:
   # -- Optional. Enable or disable all default network policies.
   enabled: true
   # -- Optional. Default NetworkPolicy resources. Each key becomes the resource name.
   # Keys that also exist in `ciliumNetworkPolicies` are treated as fallbacks:
   # rendered only when `cilium.io/v2` is not available.
-  # @default -- See below
+  # @default -- See [values.yaml](values.yaml)
   networkPolicies:
     # -- Default deny-all policy. Blocks all ingress and egress by default.
     default-deny:
@@ -312,7 +312,7 @@ defaultNetworkPolicies:
               protocol: TCP
   # -- Optional. Default CiliumNetworkPolicy resources. Each key becomes the resource name.
   # When `cilium.io/v2` is not available, the matching `networkPolicies` entry is rendered instead.
-  # @default -- See below
+  # @default -- See [values.yaml](values.yaml)
   ciliumNetworkPolicies:
     # -- DNS egress policy to kube-dns. Rendered as a CiliumNetworkPolicy when Cilium is available,
     # falls back to `networkPolicies.allow-kube-dns` otherwise.
@@ -335,7 +335,7 @@ defaultNetworkPolicies:
 # -- Optional. Values passed to the `templates` subchart for additional resources.
 # Use `networkPolicies` and `ciliumNetworkPolicies` to add extra policies beyond the project defaults
 # (e.g. cross-namespace connectivity). Set `enabled: false` to disable the subchart entirely.
-# @default -- See below
+# @default -- See [values.yaml](values.yaml)
 templates:
   # -- Optional. Enable or disable the `templates` subchart.
   # When false, no additional resources are rendered and the named-template defines are unavailable.
