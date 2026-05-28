@@ -1,8 +1,8 @@
 # project
 
-![Version: 1.2.1](https://img.shields.io/badge/Version-1.2.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.0.0](https://img.shields.io/badge/AppVersion-1.0.0-informational?style=flat-square)
+![Version: 2.0.0](https://img.shields.io/badge/Version-2.0.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.0.0](https://img.shields.io/badge/AppVersion-1.0.0-informational?style=flat-square)
 
-Deploys project infrastructure (Namespace, AppProject, app-of-apps Application, ResourceQuota, LimitRange, NetworkPolicy) for a tenant project
+Deploys project infrastructure (Namespace, AppProject, app-of-apps Application, ResourceQuota, LimitRange, NetworkPolicy, Istio Waypoint) for a tenant project
 
 **Homepage:** <https://github.com/KvalitetsIT>
 
@@ -21,7 +21,7 @@ Deploys project infrastructure (Namespace, AppProject, app-of-apps Application, 
 
 | Repository | Name | Version |
 |------------|------|---------|
-| https://raw.githubusercontent.com/KvalitetsIT/helm-repo/master/ | templates | 2.1.1 |
+| https://raw.githubusercontent.com/KvalitetsIT/helm-repo/master/ | templates | 2.2.0 |
 
 ## Values
 
@@ -54,11 +54,26 @@ Deploys project infrastructure (Namespace, AppProject, app-of-apps Application, 
 | resourceQuota.spec | object | `{}` | Required when enabled. ResourceQuota hard limits. Set via `projectDefaults.resourceQuota.spec` in the tenant chart. See [Kubernetes ResourceQuota](https://kubernetes.io/docs/concepts/policy/resource-quotas/). |
 | limitRange.enabled | bool | `false` | Optional. Enable or disable the LimitRange resource. |
 | limitRange.spec | object | `{"limits":[{"default":{"cpu":"50m","memory":"64Mi"},"defaultRequest":{"cpu":"25m","memory":"32Mi"},"type":"Container"}]}` | Optional. LimitRange limits spec. See [Kubernetes LimitRange](https://kubernetes.io/docs/concepts/policy/limit-range/). |
-| templates | object | See below | Optional. Values passed to the `templates` subchart. Set `enabled: false` to disable the subchart entirely — no NetworkPolicies are rendered at all. Add entries to `networkPolicies` or `ciliumNetworkPolicies` to create extra policies (e.g. cross-namespace connectivity). |
-| templates.enabled | bool | `true` | Optional. Enable or disable the `templates` subchart. When false, no NetworkPolicies (default or custom) are rendered. |
-| templates.networkPolicies.default-deny | object | `{"podSelector":{},"policyTypes":["Ingress","Egress"]}` | Default deny-all policy. Blocks all ingress and egress by default. |
-| templates.networkPolicies.allow-within-namespace | object | `{"egress":[{"to":[{"podSelector":{}}]}],"ingress":[{"from":[{"podSelector":{}}]}],"podSelector":{},"policyTypes":["Ingress","Egress"]}` | Allow pod-to-pod communication within the same namespace. |
-| templates.ciliumNetworkPolicies.allow-kube-dns | object | `{"egress":[{"toEndpoints":[{"matchLabels":{"k8s:io.kubernetes.pod.namespace":"kube-system","k8s:k8s-app":"kube-dns"}}],"toPorts":[{"ports":[{"port":"53","protocol":"ANY"}],"rules":{"dns":[{"matchPattern":"*"}]}}]}],"endpointSelector":{}}` | Allow DNS egress to kube-dns. Required for Cilium FQDN-based policies. |
+| waypoint | object | See below | Optional. Configuration for the Istio Waypoint proxy resources deployed in the project namespace. When enabled, renders all entries in `waypoint.resources` and `waypoint.networkPolicies`. Disable per project via `projects.<name>.waypoint.enabled: false` in the tenant chart. |
+| waypoint.enabled | bool | `true` | Optional. Enable or disable all Istio Waypoint resources. |
+| waypoint.resources | object | See below | Optional. Map of arbitrary Kubernetes resources to render when `waypoint.enabled` is true. Each key becomes the default `metadata.name`. Rendered via `templates.resource`. |
+| waypoint.resources.waypoint-options | object | `{"apiVersion":"v1","data":{"deployment":"spec:\n  template:\n    spec:\n      topologySpreadConstraints:\n        - maxSkew: 1\n          topologyKey: kubernetes.io/hostname\n          whenUnsatisfiable: ScheduleAnyway\n          labelSelector:\n            matchLabels:\n              gateway.networking.k8s.io/gateway-name: waypoint\n","horizontalPodAutoscaler":"spec:\n  minReplicas: 2\n  maxReplicas: 5\n","podDisruptionBudget":"spec:\n  minAvailable: 1\n"},"enabled":true,"kind":"ConfigMap"}` | ConfigMap passed to the Gateway parametersRef. Controls topology spread, HPA, and PDB for waypoint pods. |
+| waypoint.resources.waypoint | object | `{"apiVersion":"gateway.networking.k8s.io/v1","enabled":true,"kind":"Gateway","metadata":{"labels":{"istio.io/waypoint-for":"service"}},"spec":{"gatewayClassName":"istio-waypoint","infrastructure":{"parametersRef":{"group":"","kind":"ConfigMap","name":"waypoint-options"}},"listeners":[{"name":"mesh","port":15008,"protocol":"HBONE"}]}}` | Istio Waypoint Gateway resource. |
+| waypoint.networkPolicies | object | See below | Optional. Map of NetworkPolicy resources to render when `waypoint.enabled` is true. Each key becomes the NetworkPolicy name. Rendered via `templates.networkPolicy`. |
+| waypoint.networkPolicies.waypoint | object | `{"egress":[{"to":[{"podSelector":{}}]},{"ports":[{"port":15012,"protocol":"TCP"}],"to":[{"namespaceSelector":{"matchLabels":{"kubernetes.io/metadata.name":"istio-system"}},"podSelector":{"matchLabels":{"app":"istiod"}}}]},{"ports":[{"port":53,"protocol":"UDP"},{"port":53,"protocol":"TCP"}],"to":[{"namespaceSelector":{"matchLabels":{"kubernetes.io/metadata.name":"kube-system"}},"podSelector":{"matchLabels":{"k8s-app":"kube-dns"}}}]}],"enabled":true,"ingress":[{"from":[{"namespaceSelector":{"matchLabels":{"kubernetes.io/metadata.name":"istio-ingress"}},"podSelector":{"matchLabels":{"gateway.networking.k8s.io/gateway-name":"ingressgateway"}}}],"ports":[{"port":15008,"protocol":"TCP"}]},{"from":[{"namespaceSelector":{"matchLabels":{"kubernetes.io/metadata.name":"monitoring"}},"podSelector":{"matchLabels":{"app.kubernetes.io/name":"prometheus"}}}],"ports":[{"port":15020,"protocol":"TCP"}]}],"podSelector":{"matchLabels":{"gateway.networking.k8s.io/gateway-name":"waypoint"}},"policyTypes":["Ingress","Egress"]}` | NetworkPolicy for waypoint pods. Allows HBONE ingress, Prometheus scraping, and egress to istiod, kube-dns, and same-namespace pods. |
+| waypoint.networkPolicies.ingressgateway-acme-solver | object | `{"enabled":true,"ingress":[{"from":[{"namespaceSelector":{"matchLabels":{"kubernetes.io/metadata.name":"istio-ingress"}},"podSelector":{"matchLabels":{"gateway.networking.k8s.io/gateway-name":"ingressgateway"}}}],"ports":[{"port":8089,"protocol":"TCP"}]}],"podSelector":{"matchLabels":{"acme.cert-manager.io/http01-solver":"true"}},"policyTypes":["Ingress"]}` | NetworkPolicy allowing ingressgateway to reach cert-manager ACME HTTP-01 solver pods. |
+| defaultNetworkPolicies | object | See below | Optional. Default network policies deployed in every project namespace. Rendered directly by the project chart via the `templates` named-template defines. Disable the whole bundle with `enabled: false`, or opt out of individual entries with `enabled: false` on the entry. |
+| defaultNetworkPolicies.enabled | bool | `true` | Optional. Enable or disable all default network policies. |
+| defaultNetworkPolicies.networkPolicies | object | See below | Optional. Default NetworkPolicy resources. Each key becomes the resource name. Keys that also exist in `ciliumNetworkPolicies` are treated as fallbacks: rendered only when `cilium.io/v2` is not available. |
+| defaultNetworkPolicies.networkPolicies.default-deny | object | `{"enabled":true,"podSelector":{},"policyTypes":["Ingress","Egress"]}` | Default deny-all policy. Blocks all ingress and egress by default. |
+| defaultNetworkPolicies.networkPolicies.allow-within-namespace | object | `{"egress":[{"to":[{"podSelector":{}}]}],"enabled":true,"ingress":[{"from":[{"podSelector":{}}]}],"podSelector":{},"policyTypes":["Ingress","Egress"]}` | Allow pod-to-pod communication within the same namespace. |
+| defaultNetworkPolicies.networkPolicies.allow-kube-dns | object | `{"egress":[{"ports":[{"port":53,"protocol":"UDP"},{"port":53,"protocol":"TCP"}],"to":[{"ipBlock":{"cidr":"169.254.20.10/32"}},{"ipBlock":{"cidr":"10.43.0.10/32"}}]}],"enabled":true,"podSelector":{},"policyTypes":["Egress"]}` | Fallback DNS egress policy used when `cilium.io/v2` is not available. Ignored when Cilium is present — `ciliumNetworkPolicies.allow-kube-dns` is used instead. |
+| defaultNetworkPolicies.ciliumNetworkPolicies | object | See below | Optional. Default CiliumNetworkPolicy resources. Each key becomes the resource name. When `cilium.io/v2` is not available, the matching `networkPolicies` entry is rendered instead. |
+| defaultNetworkPolicies.ciliumNetworkPolicies.allow-kube-dns | object | `{"egress":[{"toEndpoints":[{"matchLabels":{"k8s:io.kubernetes.pod.namespace":"kube-system","k8s:k8s-app":"kube-dns"}}],"toPorts":[{"ports":[{"port":"53","protocol":"ANY"}],"rules":{"dns":[{"matchPattern":"*"}]}}]}],"enabled":true,"endpointSelector":{}}` | DNS egress policy to kube-dns. Rendered as a CiliumNetworkPolicy when Cilium is available, falls back to `networkPolicies.allow-kube-dns` otherwise. |
+| templates | object | See below | Optional. Values passed to the `templates` subchart for additional resources. Use `networkPolicies` and `ciliumNetworkPolicies` to add extra policies beyond the project defaults (e.g. cross-namespace connectivity). Set `enabled: false` to disable the subchart entirely. |
+| templates.enabled | bool | `true` | Optional. Enable or disable the `templates` subchart. When false, no additional resources are rendered and the named-template defines are unavailable. |
+| templates.networkPolicies | object | {} | Optional. Additional NetworkPolicy resources. Each key becomes the resource name. |
+| templates.ciliumNetworkPolicies | object | {} | Optional. Additional CiliumNetworkPolicy resources. Each key becomes the resource name. |
 
 ## Overview
 
@@ -75,9 +90,13 @@ the `<tenant>-projects` AppProject, ensuring values are injected and controlled 
 | `Application` | `<project>-apps` | always |
 | `ResourceQuota` | `resource-quota` | `resourceQuota.enabled` |
 | `LimitRange` | `limit-range` | `limitRange.enabled` |
-| `NetworkPolicy` | `default-deny` | `templates.enabled` |
-| `CiliumNetworkPolicy` | `allow-kube-dns` | `templates.enabled` |
-| `NetworkPolicy` | `allow-within-namespace` | `templates.enabled` |
+| `ConfigMap` | `waypoint-options` | `waypoint.enabled` |
+| `Gateway` | `waypoint` | `waypoint.enabled` |
+| `NetworkPolicy` | `waypoint` | `waypoint.enabled` |
+| `NetworkPolicy` | `ingressgateway-acme-solver` | `waypoint.enabled` |
+| `NetworkPolicy` | `default-deny` | `defaultNetworkPolicies.enabled` + `defaultNetworkPolicies.networkPolicies.default-deny.enabled` |
+| `NetworkPolicy` | `allow-within-namespace` | `defaultNetworkPolicies.enabled` + `defaultNetworkPolicies.networkPolicies.allow-within-namespace.enabled` |
+| `CiliumNetworkPolicy` or `NetworkPolicy` | `allow-kube-dns` | `defaultNetworkPolicies.enabled` + `defaultNetworkPolicies.ciliumNetworkPolicies.allow-kube-dns.enabled` (type chosen at render time based on `cilium.io/v2` API availability) |
 | `NetworkPolicy` | `<key>` (extra) | `templates.networkPolicies` |
 | `CiliumNetworkPolicy` | `<key>` (extra) | `templates.ciliumNetworkPolicies` |
 
@@ -126,8 +145,8 @@ projects:
 ## Cross-namespace NetworkPolicies
 
 The project chart includes the [`templates`](../../helm-templates/charts/templates/) subchart
-which renders extra `NetworkPolicy` and `CiliumNetworkPolicy` resources from a values map.
-Use it to express cross-namespace connectivity on top of the default policies.
+for adding extra `NetworkPolicy` and `CiliumNetworkPolicy` resources beyond the project defaults.
+Use it to express cross-namespace connectivity.
 
 Configure extra policies under the `templates` key. Each map key becomes the resource name.
 
