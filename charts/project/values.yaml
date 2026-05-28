@@ -134,6 +134,7 @@ waypoint:
   # @default -- See [values.yaml](values.yaml)
   resources:
     # -- ConfigMap passed to the Gateway parametersRef. Controls topology spread, HPA, and PDB for waypoint pods.
+    # @default -- See [values.yaml](values.yaml)
     waypoint-options:
       enabled: true
       apiVersion: v1
@@ -158,6 +159,7 @@ waypoint:
           spec:
             minAvailable: 1
     # -- Istio Waypoint Gateway resource.
+    # @default -- See [values.yaml](values.yaml)
     waypoint:
       enabled: true
       apiVersion: gateway.networking.k8s.io/v1
@@ -181,6 +183,7 @@ waypoint:
   # @default -- See [values.yaml](values.yaml)
   networkPolicies:
     # -- NetworkPolicy for waypoint pods. Allows HBONE ingress, Prometheus scraping, and egress to istiod, kube-dns, and same-namespace pods.
+    # @default -- See [values.yaml](values.yaml)
     waypoint:
       enabled: true
       podSelector:
@@ -241,6 +244,7 @@ waypoint:
             - port: 53
               protocol: TCP
     # -- NetworkPolicy allowing ingressgateway to reach cert-manager ACME HTTP-01 solver pods.
+    # @default -- See [values.yaml](values.yaml)
     ingressgateway-acme-solver:
       enabled: true
       podSelector:
@@ -273,6 +277,7 @@ defaultNetworkPolicies:
   # @default -- See [values.yaml](values.yaml)
   networkPolicies:
     # -- Default deny-all policy. Blocks all ingress and egress by default.
+    # @default -- See [values.yaml](values.yaml)
     default-deny:
       enabled: true
       podSelector: {}
@@ -280,6 +285,7 @@ defaultNetworkPolicies:
         - Ingress
         - Egress
     # -- Allow pod-to-pod communication within the same namespace.
+    # @default -- See [values.yaml](values.yaml)
     allow-within-namespace:
       enabled: true
       podSelector: {}
@@ -294,6 +300,7 @@ defaultNetworkPolicies:
             - podSelector: {}
     # -- Fallback DNS egress policy used when `cilium.io/v2` is not available.
     # Ignored when Cilium is present — `ciliumNetworkPolicies.allow-kube-dns` is used instead.
+    # @default -- See [values.yaml](values.yaml)
     allow-kube-dns:
       enabled: true
       podSelector: {}
@@ -316,6 +323,7 @@ defaultNetworkPolicies:
   ciliumNetworkPolicies:
     # -- DNS egress policy to kube-dns. Rendered as a CiliumNetworkPolicy when Cilium is available,
     # falls back to `networkPolicies.allow-kube-dns` otherwise.
+    # @default -- See [values.yaml](values.yaml)
     allow-kube-dns:
       enabled: true
       endpointSelector: {}
@@ -341,8 +349,10 @@ templates:
   # When false, no additional resources are rendered and the named-template defines are unavailable.
   enabled: true
   # -- Optional. Additional NetworkPolicy resources. Each key becomes the resource name.
-  # @default -- {}
   networkPolicies: {}
   # -- Optional. Additional CiliumNetworkPolicy resources. Each key becomes the resource name.
-  # @default -- {}
   ciliumNetworkPolicies: {}
+  # -- Optional. Additional SealedSecret resources. Each key becomes the resource name.
+  sealedSecrets: {}
+  # -- Optional. Additional arbitrary resources rendered via `templates.resource`. Each key becomes the default `metadata.name`.
+  resources: {}
