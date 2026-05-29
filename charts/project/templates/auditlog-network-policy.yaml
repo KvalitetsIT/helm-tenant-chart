@@ -19,6 +19,7 @@ spec:
         - matchLabels:
             io.kubernetes.pod.namespace: logging
             component: Aggregator
+            name: vector
       toPorts:
         - ports:
             - port: {{ $aggregatorPort | quote }}
