@@ -11,10 +11,6 @@ projectDefaults:
         requests.storage: "100Gi"
   auditlog:
     enabled: true
-    config:
-      httpPort: 9001
-      aggregatorAddress: vector-audit-aggregator.logging.svc.cluster.local:6000
-      sinkVersion: "2"
     schema:
       message:
         type: string
