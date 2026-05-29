@@ -1,0 +1,44 @@
+{{- if (.Values.auditlog).enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vector-audit-rules
+  namespace: {{ include "project.projectNamespace" . }}
+  labels:
+    {{- include "project.labels" . | nindent 4 }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
+data:
+  vector.yaml: |
+    sources:
+      audit_http_source:
+        type: http_server
+        address: "0.0.0.0:{{ .Values.auditlog.config.httpPort }}"
+        decoding:
+          codec: vrl
+          vrl:
+            source: |
+              . = parse_json!(.message)
+{{ include "project.auditlogValidationVRL" . | indent 14 }}
+    transforms:
+      add_kubernetes_metadata:
+        type: remap
+        inputs:
+          - audit_http_source
+        source: |
+          .kubernetes = {}
+          .kubernetes.pod_name = "${POD_NAME:-unknown}"
+          .kubernetes.pod_namespace = "${POD_NAMESPACE:-unknown}"
+          .kubernetes.node_name = "${NODE_NAME:-unknown}"
+          .kubernetes.pod_ip = "${POD_IP:-unknown}"
+          .kubernetes.app_label = "${APP_LABEL:-unknown}"
+          .kubernetes.namespace_labels = {}
+          .kubernetes.namespace_labels."tenant.kitkube.dk/name" = {{ .Values.tenantName | quote }}
+    sinks:
+      audit_vector_aggregator:
+        type: vector
+        inputs:
+          - add_kubernetes_metadata
+        address: {{ .Values.auditlog.config.aggregatorAddress | quote }}
+        version: {{ .Values.auditlog.config.sinkVersion | quote }}
+{{- end }}

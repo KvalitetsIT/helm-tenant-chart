@@ -63,6 +63,18 @@ projectDefaults:
         valueFiles:
           - values.yaml
 
+  # -- Default audit log config passed to every project via the project chart.
+  # Renders a `vector-audit-rules` ConfigMap in each project namespace when enabled.
+  # Override entirely per project via `projects.<name>.auditlog` — schema is never merged.
+  # @default -- See [values.yaml](values.yaml)
+  auditlog:
+    enabled: false
+    config:
+      httpPort: 9001
+      aggregatorAddress: vector-audit-aggregator.logging.svc.cluster.local:6000
+      sinkVersion: "2"
+    schema: {}
+
   # -- Default ResourceQuota passed to every project via the project chart.
   # `limits.cpu`, `limits.memory`, and `requests.storage` have no project chart defaults — they must be set here or per project.
   # Per-project override: `projects.<name>.resourceQuota`.
