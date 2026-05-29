@@ -42,6 +42,7 @@ A Helm chart for creating a new tenant in the Kithosting platform
 | projectDefaults.application.source.repoURL | string | `""` | Required. Default git repository URL for the app-of-apps. |
 | projectDefaults.application.source.targetRevision | string | `""` | Required. Default git branch, tag, or commit SHA. |
 | projectDefaults.application.source.helm | object | `{"valueFiles":["values.yaml"]}` | Optional. Default Helm value files passed to the app-of-apps Application. Per-project overrides replace this list entirely. |
+| projectDefaults.auditlog | object | See [values.yaml](values.yaml) | Default audit log config passed to every project via the project chart. Renders a `vector-audit-rules` ConfigMap in each project namespace when enabled. Override entirely per project via `projects.<name>.auditlog` — schema is never merged. |
 | projectDefaults.resourceQuota | object | See [values.yaml](values.yaml) | Default ResourceQuota passed to every project via the project chart. `limits.cpu`, `limits.memory`, and `requests.storage` have no project chart defaults — they must be set here or per project. Per-project override: `projects.<name>.resourceQuota`. |
 | projectDefaults.resourceQuota.spec.hard."limits.cpu" | string | `""` | Required |
 | projectDefaults.resourceQuota.spec.hard."limits.memory" | string | `""` | Required |
