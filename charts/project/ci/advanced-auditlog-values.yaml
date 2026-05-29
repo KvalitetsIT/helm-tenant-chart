@@ -1,0 +1,61 @@
+tenantName: acme
+projectName: inventory
+tenantAppProjectName: acme-apps
+
+application:
+  source:
+    path: inventory/apps
+    repoURL: https://github.com/example/tenant-repo.git
+    targetRevision: "main"
+
+resourceQuota:
+  spec:
+    hard:
+      limits.cpu: "4"
+      limits.memory: 8Gi
+      requests.storage: 100Gi
+
+auditlog:
+  enabled: true
+  schema:
+    # required string — base contract
+    message:
+      type: string
+      required: true
+    # required string + format constraint
+    actor:
+      type: string
+      required: true
+      format: uuid
+    # required string + enum constraint
+    action:
+      type: string
+      required: true
+      enum:
+        - READ
+        - CREATE
+        - UPDATE
+        - DELETE
+        - EXPORT
+    # optional string + enum (only checked when field is present)
+    classification:
+      type: string
+      required: false
+      enum:
+        - public
+        - internal
+        - confidential
+        - restricted
+    # optional string + format (only checked when field is present)
+    correlationId:
+      type: string
+      required: false
+      format: uuid
+    # required object + multiple requiredKeys
+    data:
+      type: object
+      required: true
+      requiredKeys:
+        - resourceId
+        - resourceType
+        - ownerId
