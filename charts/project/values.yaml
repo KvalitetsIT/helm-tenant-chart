@@ -340,6 +340,38 @@ defaultNetworkPolicies:
                 dns:
                   - matchPattern: "*"
 
+# -- Optional. Audit log sidecar configuration.
+# When enabled, renders a `vector-audit-rules` ConfigMap containing the complete Vector pipeline config.
+# The kitapp sidecar mounts this ConfigMap by the hardcoded name `vector-audit-rules`.
+# Set via `projectDefaults.auditlog` in the tenant chart to apply the same rules to all projects.
+# @default -- See [values.yaml](values.yaml)
+auditlog:
+  # -- Enable or disable the audit log ConfigMap.
+  enabled: false
+  config:
+    # -- Port the Vector HTTP source listens on. Must match the kitapp audit.config.httpPort.
+    httpPort: 9001
+    # -- Address of the Vector Aggregator.
+    aggregatorAddress: vector-audit-aggregator.logging.svc.cluster.local:6000
+    # -- Vector sink protocol version.
+    sinkVersion: "2"
+  # -- Validation schema. Each key is an audit event field.
+  # Supported field properties: type (string|object), required, enum, format (email|uuid), requiredKeys (object only).
+  # Override entirely in projectDefaults.auditlog.schema — no merging.
+  schema:
+    message:
+      type: string
+      required: true
+    actor:
+      type: string
+      required: true
+    action:
+      type: string
+      required: true
+    data:
+      type: object
+      required: false
+
 # -- Optional. Values passed to the `templates` subchart for additional resources.
 # Use `networkPolicies` and `ciliumNetworkPolicies` to add extra policies beyond the project defaults
 # (e.g. cross-namespace connectivity). Set `enabled: false` to disable the subchart entirely.

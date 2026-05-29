@@ -5,6 +5,7 @@
 {{- range $name, $value := (.Values.defaultNetworkPolicies.networkPolicies | default dict) }}
 {{- if and $value (ne $value.enabled false) }}
 {{- if not (hasKey $cnps $name) }}
+{{- $value := include "project.withProjectNamespace" (dict "root" $ "value" $value) | fromYaml }}
 {{- include "templates.networkPolicy" (dict "root" $ "name" $name "value" $value) }}
 {{- end }}
 {{- end }}
@@ -12,10 +13,12 @@
 {{- range $name, $value := $cnps }}
 {{- if and $value (ne $value.enabled false) }}
 {{- if $.Capabilities.APIVersions.Has "cilium.io/v2" }}
+{{- $value := include "project.withProjectNamespace" (dict "root" $ "value" $value) | fromYaml }}
 {{- include "templates.ciliumNetworkPolicy" (dict "root" $ "name" $name "value" $value) }}
 {{- else }}
 {{- $fallback := index ($.Values.defaultNetworkPolicies.networkPolicies | default dict) $name }}
 {{- if and $fallback (ne $fallback.enabled false) }}
+{{- $fallback := include "project.withProjectNamespace" (dict "root" $ "value" $fallback) | fromYaml }}
 {{- include "templates.networkPolicy" (dict "root" $ "name" $name "value" $fallback) }}
 {{- end }}
 {{- end }}

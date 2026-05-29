@@ -1,0 +1,41 @@
+tenantName: acme
+projectName: reporting
+tenantAppProjectName: acme-apps
+
+application:
+  source:
+    path: reporting/apps
+    repoURL: https://github.com/example/tenant-repo.git
+    targetRevision: "main"
+
+resourceQuota:
+  spec:
+    hard:
+      limits.cpu: "4"
+      limits.memory: 8Gi
+      requests.storage: 100Gi
+
+auditlog:
+  enabled: true
+  schema:
+    message:
+      type: string
+      required: true
+    actor:
+      type: string
+      required: true
+      format: email
+    action:
+      type: string
+      required: true
+      enum:
+        - READ
+        - CREATE
+        - UPDATE
+        - DELETE
+    data:
+      type: object
+      required: true
+      requiredKeys:
+        - resourceId
+        - resourceType
