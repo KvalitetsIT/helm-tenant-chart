@@ -25,6 +25,20 @@
 {{- $ns -}}
 {{- end -}}
 
+{{/* Return the given resource value map (deep-copied) with metadata.namespace
+     defaulted to the project namespace, so helper-rendered resources land in
+     <tenant>-<project> rather than the release namespace. An explicitly-set
+     metadata.namespace is preserved. Call with (dict "root" $ "value" $value);
+     pipe the result through fromYaml. */}}
+{{- define "project.withProjectNamespace" -}}
+{{- $ns := include "project.projectNamespace" .root -}}
+{{- $v := deepCopy .value -}}
+{{- $meta := $v.metadata | default dict -}}
+{{- $_ := set $meta "namespace" (default $ns $meta.namespace) -}}
+{{- $_ := set $v "metadata" $meta -}}
+{{- $v | toYaml -}}
+{{- end -}}
+
 {{/* Standard labels applied to every resource in the project chart */}}
 {{- define "project.labels" -}}
 helm.sh/chart: {{ include "project.chart" . }}
