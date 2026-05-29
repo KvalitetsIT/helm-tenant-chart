@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
-## [2.0.1] - 2026-05-29
+## [2.1.0] - 2026-05-29
 
 ### Changed
 - Bumped `project` chart dependency from `2.0.*` to `2.1.*` to track the latest project chart minor release. No tenant-specific changes.
