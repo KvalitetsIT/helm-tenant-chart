@@ -8,9 +8,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
-### Added
-- `projectDefaults.auditlog` — propagates audit log configuration to all project namespaces. Set `auditlog.enabled: true` and define a `schema` to deploy a `vector-audit-rules` ConfigMap in every project namespace via the project chart. Override per project via `projects.<name>.auditlog`. Schema is replaced entirely on override — no merging.
-
 ## [2.0.0] - 2026-05-28
 
 ### Breaking Changes
