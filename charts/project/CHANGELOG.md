@@ -8,6 +8,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [2.1.1] - 2026-05-29
+
+### Added
+- `CiliumNetworkPolicy` `allow-audit-egress-to-aggregator` — rendered when `auditlog.enabled: true`. Allows egress from pods with `audit.kitkube.dk/vector-sidecar: "true"` to the Vector aggregator (`component: Aggregator`, `name: vector`) in the `logging` namespace on the configured aggregator port.
+
+### Fixed
+- All helper-rendered resources (NetworkPolicies, Gateway, ResourceQuota, LimitRange, waypoint ConfigMap) now set an explicit `namespace` equal to the project namespace instead of inheriting the Helm release namespace. No-op in production; fixes `ct install` collisions when multiple project CI value files run against a shared namespace.
+
 ## [2.1.0] - 2026-05-29
 
 ### Added
