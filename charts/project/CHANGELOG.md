@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [2.1.0] - 2026-05-29
+
 ### Added
 - `auditlog` — optional audit log ConfigMap support. When `auditlog.enabled: true`, renders a `vector-audit-rules` ConfigMap in the project namespace containing a complete Vector pipeline config (HTTP source, validation VRL, kubernetes enrichment, aggregator sink). Consumed by the `kitapp` chart's Vector sidecar via `--watch-config`. Schema is fully declarative — supports `required`, `enum`, `format` (email/uuid), and `requiredKeys` constraints per field. Override entirely per project; no merging.
 
