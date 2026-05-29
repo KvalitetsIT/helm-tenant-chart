@@ -1,10 +1,10 @@
 tenantName: acme
-projectName: inventory
+projectName: reporting
 tenantAppProjectName: acme-apps
 
 application:
   source:
-    path: inventory/apps
+    path: reporting/apps
     repoURL: https://github.com/example/tenant-repo.git
     targetRevision: "main"
 
