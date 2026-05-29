@@ -24,7 +24,7 @@ spec:
           podSelector:
             matchLabels:
               component: Aggregator
-              name: vector
+              name: vector-audit
       ports:
         - port: {{ $aggregatorPort }}
           protocol: TCP
