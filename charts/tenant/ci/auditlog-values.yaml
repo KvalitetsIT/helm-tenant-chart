@@ -1,0 +1,69 @@
+projectDefaults:
+  application:
+    source:
+      repoURL: "https://github.com/example/tenant-repo.git"
+      targetRevision: "main"
+  resourceQuota:
+    spec:
+      hard:
+        limits.cpu: "4"
+        limits.memory: "8Gi"
+        requests.storage: "100Gi"
+  auditlog:
+    enabled: true
+    config:
+      httpPort: 9001
+      aggregatorAddress: vector-audit-aggregator.logging.svc.cluster.local:6000
+      sinkVersion: "2"
+    schema:
+      message:
+        type: string
+        required: true
+      actor:
+        type: string
+        required: true
+      action:
+        type: string
+        required: true
+        enum:
+          - READ
+          - CREATE
+          - UPDATE
+          - DELETE
+      data:
+        type: object
+        required: false
+
+projects:
+  inventory:
+    application:
+      source:
+        path: "inventory/apps"
+
+  reporting:
+    application:
+      source:
+        path: "reporting/apps"
+    auditlog:
+      enabled: true
+      schema:
+        message:
+          type: string
+          required: true
+        actor:
+          type: string
+          required: true
+          format: email
+        action:
+          type: string
+          required: true
+          enum:
+            - VIEW
+            - EDIT
+            - APPROVE
+            - REJECT
+        data:
+          type: object
+          required: true
+          requiredKeys:
+            - caseId
