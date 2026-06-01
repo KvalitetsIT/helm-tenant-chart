@@ -1,8 +1,8 @@
 {{- if (.Values.auditlog).enabled }}
-{{- $aggregatorPort := last (splitList ":" .Values.auditlog.config.aggregatorAddress) }}
+{{- $aggregatorPort := last (splitList ":" .Values.auditlog.config.aggregatorAddress) | int }}
 ---
-apiVersion: cilium.io/v2
-kind: CiliumNetworkPolicy
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
 metadata:
   name: allow-audit-egress-to-aggregator
   namespace: {{ include "project.projectNamespace" . }}
@@ -11,17 +11,21 @@ metadata:
   annotations:
     argocd.argoproj.io/sync-wave: "-1"
 spec:
-  endpointSelector:
+  podSelector:
     matchLabels:
       audit.kitkube.dk/vector-sidecar: "true"
+  policyTypes:
+    - Egress
   egress:
-    - toEndpoints:
-        - matchLabels:
-            io.kubernetes.pod.namespace: logging
-            component: Aggregator
-            name: vector
-      toPorts:
-        - ports:
-            - port: {{ $aggregatorPort | quote }}
-              protocol: TCP
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: logging
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/component: Aggregator
+              app.kubernetes.io/name: vector-audit
+      ports:
+        - port: {{ $aggregatorPort }}
+          protocol: TCP
 {{- end }}
