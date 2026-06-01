@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
-## [2.1.2] - 2026-05-29
+## [2.1.2] - 2026-06-01
 
 ### Fixed
 - Audit egress `NetworkPolicy` selector updated from `name: vector` to `name: vector-audit` to match the renamed Vector aggregator.
