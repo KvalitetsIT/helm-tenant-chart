@@ -348,6 +348,9 @@ defaultNetworkPolicies:
 auditlog:
   # -- Enable or disable the audit log ConfigMap.
   enabled: false
+  # -- Optional. Name of the tenant, injected by the tenant chart. Used in the Vector pipeline for metadata enrichment and validation.
+  tenantName: ""
+
   config:
     # -- Port the Vector HTTP source listens on. Must match the kitapp audit.config.httpPort.
     httpPort: 9001
