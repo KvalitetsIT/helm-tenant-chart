@@ -1,3 +1,4 @@
+{{- if not .Values.applicationSet.enabled }}
 {{- include "tenant.validateProjectDefaults" .Values.projectDefaults }}
 {{- range $name, $project := .Values.projects }}
 {{- $tenantName := include "tenant.name" $ }}
@@ -30,4 +31,5 @@ spec:
   syncPolicy:
     {{- toYaml . | nindent 4 }}
   {{- end }}
+{{- end }}
 {{- end }}

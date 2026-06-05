@@ -1,0 +1,33 @@
+applicationSet:
+  enabled: true
+  generator:
+    git:
+      repoURL: "https://github.com/example/tenant-repo.git"
+      revision: main
+      files:
+        - path: "projects.yaml"
+
+projectDefaults:
+  application:
+    source:
+      repoURL: "https://github.com/example/tenant-repo.git"
+      targetRevision: "main"
+  resourceQuota:
+    spec:
+      hard:
+        limits.cpu: "4"
+        limits.memory: "8Gi"
+        requests.storage: "100Gi"
+
+projects:
+  reporting:
+    application:
+      source:
+        path: reporting/apps
+  inventory:
+    resourceQuota:
+      spec:
+        hard:
+          limits.cpu: "16"
+          limits.memory: "32Gi"
+          requests.storage: "500Gi"

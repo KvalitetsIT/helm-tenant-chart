@@ -14,6 +14,27 @@ tenantNamespace:
   # -- Optional. Additional annotations for the tenant namespace.
   annotations: {}
 
+# -- Opt-in self-service projects: discover them from a tenant-owned git repo via an ApplicationSet instead of the `projects` loop.
+# Tenants may only set `application.source.{path,targetRevision,helm}`; admin `projects.<name>` entries win.
+# @default -- See [values.yaml](values.yaml)
+applicationSet:
+  # -- Enable self-service projects. Mutually exclusive with the `projects` loop.
+  enabled: false
+  syncPolicy:
+    # -- `create-only` | `create-update` | `create-delete`. `create-update` keeps projects dropped from the generator (removal becomes manual); needs the controller `--enable-policy-override` flag. Set "" to allow auto-deletion.
+    applicationsSync: create-update
+    # -- Keep the generated Applications' resources when the ApplicationSet is deleted.
+    preserveResourcesOnDeletion: true
+  generator:
+    git:
+      # -- Required. Git repo holding the tenant projects file.
+      repoURL: ""
+      # -- Git branch, tag, or commit SHA.
+      revision: main
+      # -- File(s) holding the `projects` map (same shape as the admin map).
+      files:
+        - path: "projects.yaml"
+
 # -----------------------------------------------------------------------
 # PER-PROJECT DEFAULTS
 # Deep-merged with each entry under projects.<name> — project values win.

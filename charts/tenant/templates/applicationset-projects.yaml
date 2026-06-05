@@ -1,0 +1,82 @@
+{{- if .Values.applicationSet.enabled }}
+{{- $tenantName := include "tenant.name" . }}
+{{- $git := .Values.applicationSet.generator.git }}
+{{- $projectApp := .Values.projectDefaults.projectApplication }}
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: {{ $tenantName }}-projects
+  namespace: {{ .Values.argoNamespace }}
+  labels:
+    {{- include "tenant.labels" . | nindent 4 }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "-10"
+spec:
+  goTemplate: true
+  {{- with .Values.applicationSet.syncPolicy }}
+  syncPolicy:
+    {{- with .applicationsSync }}
+    applicationsSync: {{ . }}
+    {{- end }}
+    preserveResourcesOnDeletion: {{ .preserveResourcesOnDeletion | default false }}
+  {{- end }}
+  generators:
+    - matrix:
+        generators:
+          - git:
+              repoURL: {{ required "applicationSet.generator.git.repoURL is required" $git.repoURL | quote }}
+              revision: {{ $git.revision | default "main" | quote }}
+              files:
+                {{- toYaml $git.files | nindent 16 }}
+          # One element per project: union of the tenant and admin `projects` maps; the map key wins so a tenant can't spoof another project.
+          - list:
+              elementsYaml: |
+{{ printf "                {{- $adminMap := `%s` | fromJson -}}" (include "tenant.applicationSetOverrides" .) }}
+{{ `                {{- $tenant := .projects | default dict -}}
+                {{- $names := concat (keys $tenant) (keys $adminMap) | uniq -}}
+                {{- $out := list -}}
+                {{- range $i, $name := $names -}}
+                {{- $elem := mergeOverwrite (deepCopy (index $tenant $name | default dict)) (dict "name" $name) -}}
+                {{- $out = append $out $elem -}}
+                {{- end -}}
+                {{ $out | toJson }}` }}
+  template:
+    metadata:
+      name: '{{ `{{ .name }}` }}-project'
+      namespace: {{ $tenantName }}
+      labels:
+        {{- include "tenant.labels" . | nindent 8 }}
+      annotations:
+        argocd.argoproj.io/sync-wave: "-10"
+      finalizers:
+        - resources-finalizer.argocd.argoproj.io
+    spec:
+      project: {{ include "tenant.projectAppProjectName" . }}
+      source:
+        repoURL: {{ required "projectDefaults.projectApplication.source.repoURL is required" $projectApp.source.repoURL | quote }}
+        chart: {{ $projectApp.source.chart | default "project" | quote }}
+        targetRevision: {{ required "projectDefaults.projectApplication.source.targetRevision is required" $projectApp.source.targetRevision | quote }}
+      destination:
+        namespace: {{ $tenantName }}-{{ `{{ .name }}` }}
+        server: https://kubernetes.default.svc
+      {{- with $projectApp.syncPolicy }}
+      syncPolicy:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+  # Effective valuesObject = admin base + whitelisted tenant source + admin projects.<name> override (admin wins).
+  templatePatch: |
+{{ printf "    {{- $base := `%s` | fromJson -}}" (include "tenant.applicationSetBase" .) }}
+{{ printf "    {{- $overrides := `%s` | fromJson -}}" (include "tenant.applicationSetOverrides" .) }}
+{{ `    {{- $v := deepCopy $base -}}
+    {{- $src := dict -}}
+    {{- with .application }}{{- with .source -}}
+    {{- if .path }}{{- $_ := set $src "path" .path -}}{{- end -}}
+    {{- if .targetRevision }}{{- $_ := set $src "targetRevision" .targetRevision -}}{{- end -}}
+    {{- if .helm }}{{- $_ := set $src "helm" .helm -}}{{- end -}}
+    {{- end }}{{- end -}}
+    {{- $v = mergeOverwrite $v (dict "application" (dict "source" $src)) -}}
+    {{- $v = mergeOverwrite $v (index $overrides .name | default dict) -}}
+    {{- $_ := set $v "projectName" .name -}}
+    {{- (dict "spec" (dict "source" (dict "helm" (dict "valuesObject" $v)))) | toYaml -}}` }}
+{{- end }}
