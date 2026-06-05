@@ -110,10 +110,17 @@ jobs:
       - name: Install CRDs
         if: steps.list-changed.outputs.changed == 'true'
         run: |
+          # Poll the Established condition instead of `kubectl wait`: a freshly server-side-applied
+          # CRD may briefly have a nil .status.conditions, which makes `kubectl wait` error out
+          # rather than wait. An empty jsonpath result just retries.
           wait_for_crd() {
             local crd="$1"
-            kubectl wait --for=condition=Established --timeout=60s "crd/${crd}" \
-              || kubectl wait --for=condition=Established --timeout=60s "crd/${crd}"
+            for _ in $(seq 1 30); do
+              [ "$(kubectl get crd "$crd" -o jsonpath='{.status.conditions[?(@.type=="Established")].status}' 2>/dev/null)" = "True" ] && return 0
+              sleep 2
+            done
+            echo "Timed out waiting for CRD ${crd} to be Established" >&2
+            return 1
           }
 
           kubectl apply -f https://raw.githubusercontent.com/bitnami-labs/sealed-secrets/refs/tags/v0.34.0/helm/sealed-secrets/crds/bitnami.com_sealedsecrets.yaml
