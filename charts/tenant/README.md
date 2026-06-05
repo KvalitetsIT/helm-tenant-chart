@@ -32,6 +32,13 @@ A Helm chart for creating a new tenant in the Kithosting platform
 | roleGroups | object | `{}` | Optional. Map of role name → AD/OIDC group list applied globally to all AppProjects. Acts as the lowest-precedence default — per-project `appProject.roles.<name>.groups` always wins. |
 | tenantNamespace.labels | object | `{}` | Optional. Additional labels for the tenant namespace. |
 | tenantNamespace.annotations | object | `{}` | Optional. Additional annotations for the tenant namespace. |
+| applicationSet | object | See [values.yaml](values.yaml) | Opt-in self-service projects: discover them from a tenant-owned git repo via an ApplicationSet instead of the `projects` loop. Tenants may only set `application.source.{path,targetRevision,helm}`; admin `projects.<name>` entries win. |
+| applicationSet.enabled | bool | `false` | Enable self-service projects. Mutually exclusive with the `projects` loop. |
+| applicationSet.syncPolicy.applicationsSync | string | `"create-update"` | `create-only` | `create-update` | `create-delete`. `create-update` keeps projects dropped from the generator (removal becomes manual); needs the controller `--enable-policy-override` flag. Set "" to allow auto-deletion. |
+| applicationSet.syncPolicy.preserveResourcesOnDeletion | bool | `true` | Keep the generated Applications' resources when the ApplicationSet is deleted. |
+| applicationSet.generator.git.repoURL | string | `""` | Required. Git repo holding the tenant projects file. |
+| applicationSet.generator.git.revision | string | `"main"` | Git branch, tag, or commit SHA. |
+| applicationSet.generator.git.files | list | `[{"path":"projects.yaml"}]` | File(s) holding the `projects` map (same shape as the admin map). |
 | projectDefaults | object | See [values.yaml](values.yaml) | Shared defaults applied to every project. All keys are deep-merged with `projects.<name>` — project values win. See the [project chart values](../project/README.md#values) for the full schema, including `limitRange`, `templates`, `appProject`, and `namespace`. |
 | projectDefaults.projectApplication | object | See [values.yaml](values.yaml) | Default deployment config for `<project>-project` Applications (runs the project chart). Governed by the `<tenant>-projects` AppProject. Per-project override: `projects.<name>.projectApplication`. |
 | projectDefaults.projectApplication.source.repoURL | string | `"https://raw.githubusercontent.com/KvalitetsIT/helm-repo/master/"` | Required. OCI/Helm repository URL for the project chart. |
@@ -122,6 +129,88 @@ optional project chart values.
 
 Values flow: `projectDefaults` is deep-merged with `projects.<name>` — project values win.
 The merged result (minus `projectApplication`) is passed to the project chart as `valuesObject`.
+
+## Self-Service Projects (ApplicationSet)
+
+Set `applicationSet.enabled: true` to let a tenant create their own projects from a
+tenant-owned git repo, instead of an admin editing `projects` here. In this mode the in-chart
+`projects` loop is **replaced** by an ArgoCD `ApplicationSet` whose generator reads a single
+file (default `projects.yaml`) holding the same name-keyed `projects` map:
+
+```yaml
+# tenant repo: projects.yaml
+projects:
+  inventory:
+    application:
+      source:
+        path: inventory/apps
+  reporting:
+    application:
+      source:
+        path: reporting/apps
+```
+
+The tenant may set **only** `application.source.{path,targetRevision,helm}` per project — every
+other field is read from `projectDefaults` and from the admin `projects.<name>` map in this
+values file, which **wins** on any conflict. So admins keep control of quota, roles, chart
+version and `repoURL` by construction (the ApplicationSet template never reads those keys from
+the tenant file), while tenants self-serve project creation.
+
+The rendered project set is the **union** of the tenant file's `projects` map and the admin
+`projects` map here. So an admin can also **define** a project (give it
+`application.source.path` in this values file and it is created even if the tenant file omits
+it) and **override** a tenant-created project (same name → merged, admin wins). Project
+existence comes from either side; per-project values merge as:
+
+`projectDefaults` → tenant `application.source.*` → admin `projects.<name>` (wins).
+
+The `<tenant>-projects` AppProject uses a `<tenant>-*` destination wildcard in this mode (project
+names are not known at render time). Validate the tenant's `projects.yaml` in that repo's CI
+(DNS-1123 names, no `repoURL`) as a user-facing guard; the project chart's own DNS-1123 check is
+the in-cluster backstop.
+
+**Pruning safety.** `applicationSet.syncPolicy` defaults to `applicationsSync: create-update` and
+`preserveResourcesOnDeletion: true`, so a broken or empty `projects.yaml` cannot delete existing
+projects (and their namespaces). With `create-update`, a project dropped from the generator is
+**not** auto-deleted — removal is a deliberate admin action. The `applicationsSync` policy only
+takes effect when the applicationset-controller runs with `--enable-policy-override`; set
+`applicationsSync: ""` to allow automatic deletion of dropped projects.
+
+```yaml
+applicationSet:
+  enabled: true
+  generator:
+    git:
+      repoURL: "https://github.com/example/tenant-repo.git"
+      revision: main
+      files:
+        - path: "projects.yaml"
+
+projectDefaults:
+  application:
+    source:
+      repoURL: "https://github.com/example/tenant-repo.git"
+      targetRevision: "main"
+  resourceQuota:
+    spec:
+      hard:
+        limits.cpu: "4"
+        limits.memory: "8Gi"
+        requests.storage: "100Gi"
+
+projects:
+  reporting:
+    application:
+      source:
+        path: reporting/apps
+  inventory:
+    resourceQuota:
+      spec:
+        hard:
+          limits.cpu: "16"
+          limits.memory: "32Gi"
+          requests.storage: "500Gi"
+```
 
 ## Examples
 

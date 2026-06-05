@@ -8,6 +8,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+- Opt-in `applicationSet` self-service projects. When `applicationSet.enabled: true`, projects are discovered from a tenant-owned git repo (a `projects` map in a single file) via an ArgoCD ApplicationSet instead of the in-chart `projects` loop. The rendered project set is the **union** of the tenant repo's `projects` map and the admin `projects` map in this chart's values, so admins can both define their own projects and override tenant-created ones (matched by name, admin wins) — while tenants may only set `application.source.{path,targetRevision,helm}` per project. `projectDefaults` supplies the rest. The `<tenant>-projects` AppProject uses a `<tenant>-*` destination wildcard in this mode.
+- ApplicationSet sync-safety defaults (`applicationSet.syncPolicy`): `applicationsSync: create-update` and `preserveResourcesOnDeletion: true`. These prevent a broken or empty tenant `projects.yaml` (generator returning zero results) from deleting existing projects and cascade-destroying their namespaces. `applicationsSync` requires the applicationset-controller `--enable-policy-override` flag to take effect; `preserveResourcesOnDeletion` is always honored. With `create-update`, removing a project becomes a deliberate admin action rather than an automatic effect of editing the tenant file.
+
 ## [2.1.0] - 2026-05-29
 
 ### Changed

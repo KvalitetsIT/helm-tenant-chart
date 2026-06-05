@@ -70,6 +70,56 @@ optional project chart values.
 Values flow: `projectDefaults` is deep-merged with `projects.<name>` — project values win.
 The merged result (minus `projectApplication`) is passed to the project chart as `valuesObject`.
 
+## Self-Service Projects (ApplicationSet)
+
+Set `applicationSet.enabled: true` to let a tenant create their own projects from a
+tenant-owned git repo, instead of an admin editing `projects` here. In this mode the in-chart
+`projects` loop is **replaced** by an ArgoCD `ApplicationSet` whose generator reads a single
+file (default `projects.yaml`) holding the same name-keyed `projects` map:
+
+```yaml
+# tenant repo: projects.yaml
+projects:
+  inventory:
+    application:
+      source:
+        path: inventory/apps
+  reporting:
+    application:
+      source:
+        path: reporting/apps
+```
+
+The tenant may set **only** `application.source.{path,targetRevision,helm}` per project — every
+other field is read from `projectDefaults` and from the admin `projects.<name>` map in this
+values file, which **wins** on any conflict. So admins keep control of quota, roles, chart
+version and `repoURL` by construction (the ApplicationSet template never reads those keys from
+the tenant file), while tenants self-serve project creation.
+
+The rendered project set is the **union** of the tenant file's `projects` map and the admin
+`projects` map here. So an admin can also **define** a project (give it
+`application.source.path` in this values file and it is created even if the tenant file omits
+it) and **override** a tenant-created project (same name → merged, admin wins). Project
+existence comes from either side; per-project values merge as:
+
+`projectDefaults` → tenant `application.source.*` → admin `projects.<name>` (wins).
+
+The `<tenant>-projects` AppProject uses a `<tenant>-*` destination wildcard in this mode (project
+names are not known at render time). Validate the tenant's `projects.yaml` in that repo's CI
+(DNS-1123 names, no `repoURL`) as a user-facing guard; the project chart's own DNS-1123 check is
+the in-cluster backstop.
+
+**Pruning safety.** `applicationSet.syncPolicy` defaults to `applicationsSync: create-update` and
+`preserveResourcesOnDeletion: true`, so a broken or empty `projects.yaml` cannot delete existing
+projects (and their namespaces). With `create-update`, a project dropped from the generator is
+**not** auto-deleted — removal is a deliberate admin action. The `applicationsSync` policy only
+takes effect when the applicationset-controller runs with `--enable-policy-override`; set
+`applicationsSync: ""` to allow automatic deletion of dropped projects.
+
+```yaml
+{{ (.Files.Get "ci/applicationset-values.yaml") -}}
+```
+
 ## Examples
 
 ### Minimal

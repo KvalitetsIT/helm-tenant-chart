@@ -93,11 +93,12 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- toYaml $valuesObject -}}
 {{- end -}}
 
-{{/* Collect unique application repoURLs across all projects (app-of-apps).
-     Iterates projects, merges per-project overrides, deduplicates.
-     Yields a YAML list of strings. */}}
+{{/* Unique app-of-apps repoURLs: the projectDefaults default plus any per-project overrides. Yields a YAML list. */}}
 {{- define "tenant.applicationSourceRepos" -}}
 {{- $repos := list -}}
+{{- with .Values.projectDefaults.application.source.repoURL -}}
+  {{- $repos = append $repos . -}}
+{{- end -}}
 {{- range $name, $project := .Values.projects -}}
   {{- $p := fromYaml (include "tenant.merge" (dict "defaults" $.Values.projectDefaults "override" $project)) -}}
   {{- $url := $p.application.source.repoURL -}}
@@ -108,11 +109,12 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- toYaml $repos -}}
 {{- end -}}
 
-{{/* Collect unique projectApplication repoURLs across all projects (project chart OCI).
-     Iterates projects, merges per-project overrides, deduplicates.
-     Yields a YAML list of strings. */}}
+{{/* Unique project-chart (OCI) repoURLs: the projectDefaults default plus any per-project overrides. Yields a YAML list. */}}
 {{- define "tenant.projectSourceRepos" -}}
 {{- $repos := list -}}
+{{- with .Values.projectDefaults.projectApplication.source.repoURL -}}
+  {{- $repos = append $repos . -}}
+{{- end -}}
 {{- range $name, $project := .Values.projects -}}
   {{- $p := fromYaml (include "tenant.merge" (dict "defaults" $.Values.projectDefaults "override" $project)) -}}
   {{- $url := $p.projectApplication.source.repoURL -}}
@@ -121,4 +123,20 @@ app.kubernetes.io/instance: {{ .Release.Name }}
   {{- end -}}
 {{- end -}}
 {{- toYaml $repos -}}
+{{- end -}}
+
+{{/* Admin base valuesObject (JSON) for the ApplicationSet: buildValuesObject of projectDefaults, without projectName or tenant source (merged in per-item at runtime). */}}
+{{- define "tenant.applicationSetBase" -}}
+{{- include "tenant.validateProjectDefaults" .Values.projectDefaults -}}
+{{- $p := fromYaml (include "tenant.merge" (dict "defaults" .Values.projectDefaults "override" dict)) -}}
+{{- include "tenant.buildValuesObject" (dict "root" . "name" "" "p" $p) | fromYaml | toJson -}}
+{{- end -}}
+
+{{/* Admin projects map (JSON), projectApplication stripped — the per-project override source for the ApplicationSet (matched by name, admin wins). */}}
+{{- define "tenant.applicationSetOverrides" -}}
+{{- $out := dict -}}
+{{- range $name, $project := .Values.projects -}}
+  {{- $_ := set $out $name (omit $project "projectApplication") -}}
+{{- end -}}
+{{- $out | toJson -}}
 {{- end -}}
