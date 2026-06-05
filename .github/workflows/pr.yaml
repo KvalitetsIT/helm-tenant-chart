@@ -128,7 +128,7 @@ jobs:
           kubectl apply -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/crds/application-crd.yaml
           wait_for_crd applications.argoproj.io
 
-          kubectl apply -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/crds/applicationset-crd.yaml
+          kubectl apply --server-side -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/crds/applicationset-crd.yaml
           wait_for_crd applicationsets.argoproj.io
 
           kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/refs/tags/v1.5.1/config/crd/standard/gateway.networking.k8s.io_gateways.yaml
