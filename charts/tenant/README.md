@@ -74,6 +74,10 @@ A Helm chart for creating a new tenant in the Kithosting platform
 | projects.\<project-name>.resourceQuota | object | `{"spec":{"hard":{"limits.cpu":"","limits.memory":"","requests.storage":""}}}` | Required if not set in projectDefaults. ResourceQuota hard limits. Overrides `projectDefaults.resourceQuota`. |
 | projects.\<project-name>.limitRange | object | `{"enabled":false,"spec":{"limits":[{"default":{"cpu":"50m","memory":"64Mi"},"defaultRequest":{"cpu":"25m","memory":"32Mi"},"type":"Container"}]}}` | Optional. LimitRange configuration. Overrides `projectDefaults.limitRange`. |
 | projects.\<project-name>.templates | object | `{"enabled":true}` | Optional. Enable or disable the `templates` subchart for this project. When false, no NetworkPolicies (default or custom) are rendered. Overrides `projectDefaults.templates`. |
+| keycloakGroup.enabled | bool | `false` | Enable KeycloakGroup resource creation. Also requires the keycloak-operator CRD to be present in the cluster. |
+| keycloakGroup.namespace | string | `"auth"` | Namespace where the KeycloakGroup resource is created. |
+| keycloakGroup.realmRef | string | `"infrastructure"` | Keycloak realm to create the group in. |
+| keycloakGroup.parentGroupRef | string | `"tenants"` | Parent group under which the tenant group is nested. |
 
 ## Architecture
 
