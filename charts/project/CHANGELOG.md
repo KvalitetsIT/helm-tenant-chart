@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
-## [2.1.3] - 2026-06-02
+## [2.1.3] - 2026-06-08
 
 ### Changed
 - `auditlog.tenantName` value added — allows the tenant chart to inject the tenant name via `projectDefaults.auditlog.tenantName`, falling back to the top-level `tenantName` if not set.
