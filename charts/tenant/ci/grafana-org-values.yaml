@@ -19,4 +19,4 @@ projectDefaults:
 
 grafanaOrg:
   enabled: true
-  orgName: KitDemo
+  orgName: acme
