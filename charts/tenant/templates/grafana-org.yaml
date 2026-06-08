@@ -1,0 +1,16 @@
+{{- if and .Values.grafanaOrg.enabled (.Capabilities.APIVersions.Has "grafana-org-operator.kubitus-project.gitlab.io/v1beta1") }}
+apiVersion: grafana-org-operator.kubitus-project.gitlab.io/v1beta1
+kind: GrafanaOrg
+metadata:
+  name: {{ include "tenant.name" . }}-grafana-org
+  namespace: tenants
+  labels:
+    {{- include "tenant.labels" . | nindent 4 }}
+spec:
+  grafanaInstanceRef: {{ .Values.grafanaOrg.grafanaInstanceRef }}
+  orgName: {{ default (include "tenant.name" . | title) .Values.grafanaOrg.orgName }}
+  {{- with .Values.grafanaOrg.orgMapping }}
+  orgMapping:
+    {{- tpl (toYaml .) $ | nindent 4 }}
+  {{- end }}
+{{- end }}

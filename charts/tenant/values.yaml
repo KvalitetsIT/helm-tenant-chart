@@ -129,3 +129,60 @@ keycloakGroup:
 
   # -- Parent group under which the tenant group is nested.
   parentGroupRef: tenants
+
+# -----------------------------------------------------------------------
+# GRAFANA ORG
+# Creates a GrafanaOrg and GrafanaOrgDatasource resources in the `tenants`
+# namespace. Requires the grafana-org-operator CRD to be installed on the
+# cluster (grafana-org-operator.kubitus-project.gitlab.io/v1beta1).
+# -----------------------------------------------------------------------
+
+# @default -- See [values.yaml](values.yaml)
+grafanaOrg:
+  # -- Enable GrafanaOrg and GrafanaOrgDatasource resources.
+  # Also requires the grafana-org-operator CRD to be present in the cluster.
+  enabled: false
+
+  # -- Cross-namespace ref to the GrafanaInstance.
+  grafanaInstanceRef: "monitoring/grafana"
+
+  # -- Grafana display name for the org. Defaults to the tenant name.
+  orgName: ""
+
+  # -- OIDC group → Grafana role mappings.
+  # @default -- See [values.yaml](values.yaml)
+  orgMapping:
+    - group: cluster-admin
+      role: Admin
+      provider: generic_oauth
+    - group: '{{ include "tenant.name" . }}-developer'
+      role: Editor
+      provider: generic_oauth
+    - group: '{{ include "tenant.name" . }}-viewer'
+      role: Viewer
+      provider: generic_oauth
+
+  # -- Map of datasources to provision under this org.
+  # Loki and Prometheus are pre-configured with standard cluster-local endpoints.
+  # `secureJsonData.httpHeaderValue1` auto-defaults to the release namespace if not set,
+  # which populates the tenant-isolation header (X-Scope-OrgId / X-Namespace).
+  # @default -- See [values.yaml](values.yaml)
+  datasources:
+    loki:
+      name: Loki
+      type: loki
+      url: http://loki.logging.svc.cluster.local:3100
+      jsonData:
+        tlsSkipVerify: true
+        httpHeaderName1: X-Scope-OrgId
+      secureJsonData:
+        httpHeaderValue1: '{{ include "tenant.name" . }}'
+    prometheus:
+      name: Prometheus
+      type: prometheus
+      url: http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090
+      jsonData:
+        tlsSkipVerify: true
+        httpHeaderName1: X-Namespace
+      secureJsonData:
+        httpHeaderValue1: '{{ include "tenant.name" . }}-.*'
