@@ -1,0 +1,49 @@
+{{- if and .Values.keycloakGroup.enabled (.Capabilities.APIVersions.Has "keycloak.hostzero.com/v1beta1") }}
+{{- $tenantName := include "tenant.name" . }}
+apiVersion: keycloak.hostzero.com/v1beta1
+kind: KeycloakGroup
+metadata:
+  name: {{ $tenantName }}-tenant-group
+  namespace: {{ .Values.keycloakGroup.namespace }}
+  labels:
+    {{- include "tenant.labels" . | nindent 4 }}
+spec:
+  realmRef:
+    name: {{ .Values.keycloakGroup.realmRef }}
+  {{- with .Values.keycloakGroup.parentGroupRef }}
+  parentGroupRef:
+    name: {{ . }}
+  {{- end }}
+  definition:
+    name: {{ $tenantName }}
+---
+apiVersion: keycloak.hostzero.com/v1beta1
+kind: KeycloakGroup
+metadata:
+  name: {{ $tenantName }}-viewer-group
+  namespace: {{ .Values.keycloakGroup.namespace }}
+  labels:
+    {{- include "tenant.labels" . | nindent 4 }}
+spec:
+  realmRef:
+    name: {{ .Values.keycloakGroup.realmRef }}
+  parentGroupRef:
+    name: {{ $tenantName }}
+  definition:
+    name: {{ $tenantName }}-viewer
+---
+apiVersion: keycloak.hostzero.com/v1beta1
+kind: KeycloakGroup
+metadata:
+  name: {{ $tenantName }}-developer-group
+  namespace: {{ .Values.keycloakGroup.namespace }}
+  labels:
+    {{- include "tenant.labels" . | nindent 4 }}
+spec:
+  realmRef:
+    name: {{ .Values.keycloakGroup.realmRef }}
+  parentGroupRef:
+    name: {{ $tenantName }}
+  definition:
+    name: {{ $tenantName }}-developer
+{{- end }}

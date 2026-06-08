@@ -1,0 +1,21 @@
+nameOverride: "kitdemo"
+
+projectDefaults:
+  projectApplication:
+    source:
+      repoURL: "https://raw.githubusercontent.com/KvalitetsIT/helm-repo/master/"
+      chart: project
+      targetRevision: "2.1.*"
+  application:
+    source:
+      repoURL: git@github.com:KvalitetsIT/example.git
+      targetRevision: main
+  resourceQuota:
+    spec:
+      hard:
+        limits.cpu: "4"
+        limits.memory: "8Gi"
+        requests.storage: "10Gi"
+
+keycloakGroup:
+  enabled: true
