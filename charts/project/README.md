@@ -1,6 +1,6 @@
 # project
 
-![Version: 2.1.2](https://img.shields.io/badge/Version-2.1.2-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.0.0](https://img.shields.io/badge/AppVersion-1.0.0-informational?style=flat-square)
+![Version: 2.1.3](https://img.shields.io/badge/Version-2.1.3-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.0.0](https://img.shields.io/badge/AppVersion-1.0.0-informational?style=flat-square)
 
 Deploys project infrastructure (Namespace, AppProject, app-of-apps Application, ResourceQuota, LimitRange, NetworkPolicy, Istio Waypoint) for a tenant project
 
@@ -72,6 +72,7 @@ Deploys project infrastructure (Namespace, AppProject, app-of-apps Application, 
 | defaultNetworkPolicies.ciliumNetworkPolicies.allow-kube-dns | object | See [values.yaml](values.yaml) | DNS egress policy to kube-dns. Rendered as a CiliumNetworkPolicy when Cilium is available, falls back to `networkPolicies.allow-kube-dns` otherwise. |
 | auditlog | object | See [values.yaml](values.yaml) | Optional. Audit log sidecar configuration. When enabled, renders a `vector-audit-rules` ConfigMap containing the complete Vector pipeline config. The kitapp sidecar mounts this ConfigMap by the hardcoded name `vector-audit-rules`. Set via `projectDefaults.auditlog` in the tenant chart to apply the same rules to all projects. |
 | auditlog.enabled | bool | `false` | Enable or disable the audit log ConfigMap. |
+| auditlog.tenantName | string | `""` | Optional. Name of the tenant, injected by the tenant chart. Used in the Vector pipeline for metadata enrichment and validation. |
 | auditlog.config.httpPort | int | `9001` | Port the Vector HTTP source listens on. Must match the kitapp audit.config.httpPort. |
 | auditlog.config.aggregatorAddress | string | `"vector-audit-aggregator.logging.svc.cluster.local:6000"` | Address of the Vector Aggregator. |
 | auditlog.config.sinkVersion | string | `"2"` | Vector sink protocol version. |
