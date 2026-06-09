@@ -32,9 +32,9 @@ A Helm chart for creating a new tenant in the Kithosting platform
 | roleGroups | object | `{}` | Optional. Map of role name → AD/OIDC group list applied globally to all AppProjects. Acts as the lowest-precedence default — per-project `appProject.roles.<name>.groups` always wins. |
 | tenantNamespace.labels | object | `{}` | Optional. Additional labels for the tenant namespace. |
 | tenantNamespace.annotations | object | `{}` | Optional. Additional annotations for the tenant namespace. |
-| applicationSet | object | See [values.yaml](values.yaml) | Opt-in self-service projects: discover them from a tenant-owned git repo via an ApplicationSet instead of the `projects` loop. Tenants may only set `application.source.{path,targetRevision,helm}`; admin `projects.<name>` entries win. |
+| applicationSet | object | See [values.yaml](values.yaml) | Opt-in self-service projects: discover them from a tenant-owned git repo via an ApplicationSet instead of the `projects` loop. Tenants may only set the `application` block (an unauthorized source.repoURL is rejected by the `<tenant>-apps` AppProject); admin `projects.<name>` entries win. |
 | applicationSet.enabled | bool | `false` | Enable self-service projects. Mutually exclusive with the `projects` loop. |
-| applicationSet.syncPolicy.applicationsSync | string | `"create-update"` | `create-only` | `create-update` | `create-delete`. `create-update` keeps projects dropped from the generator (removal becomes manual); needs the controller `--enable-policy-override` flag. Set "" to allow auto-deletion. |
+| applicationSet.syncPolicy.applicationsSync | string | `"create-update"` | `create-only` | `create-update` | `create-delete`. `create-update` keeps projects dropped from the generator (removal becomes manual). Set "" to allow auto-deletion. |
 | applicationSet.syncPolicy.preserveResourcesOnDeletion | bool | `true` | Keep the generated Applications' resources when the ApplicationSet is deleted. |
 | applicationSet.generator.git.repoURL | string | `""` | Required. Git repo holding the tenant projects file. |
 | applicationSet.generator.git.revision | string | `"main"` | Git branch, tag, or commit SHA. |
@@ -154,11 +154,13 @@ projects:
         path: reporting/apps
 ```
 
-The tenant may set **only** `application.source.{path,targetRevision,helm}` per project — every
-other field is read from `projectDefaults` and from the admin `projects.<name>` map in this
-values file, which **wins** on any conflict. So admins keep control of quota, roles, chart
-version and `repoURL` by construction (the ApplicationSet template never reads those keys from
-the tenant file), while tenants self-serve project creation.
+The tenant may set **only** the per-project `application` block — every other field (quota,
+roles, chart version) is read from `projectDefaults` and the admin `projects.<name>` map in this
+values file, which **wins** on any conflict. The ApplicationSet template only ever reads the
+tenant's `application` block, so quota and roles can't be set by tenants. An
+`application.source.repoURL` does flow through, but an unauthorized one is **rejected by the
+`<tenant>-apps` AppProject** `sourceRepos` at sync time — the AppProject is the enforcement
+layer, so no extra guard is needed in the template.
 
 The rendered project set is the **union** of the tenant file's `projects` map and the admin
 `projects` map here. So an admin can also **define** a project (give it
@@ -166,19 +168,19 @@ The rendered project set is the **union** of the tenant file's `projects` map an
 it) and **override** a tenant-created project (same name → merged, admin wins). Project
 existence comes from either side; per-project values merge as:
 
-`projectDefaults` → tenant `application.source.*` → admin `projects.<name>` (wins).
+`projectDefaults` → tenant `application` → admin `projects.<name>` (wins).
 
 The `<tenant>-projects` AppProject uses a `<tenant>-*` destination wildcard in this mode (project
 names are not known at render time). Validate the tenant's `projects.yaml` in that repo's CI
-(DNS-1123 names, no `repoURL`) as a user-facing guard; the project chart's own DNS-1123 check is
-the in-cluster backstop.
+(DNS-1123 names) as a user-facing guard; the project chart's own DNS-1123 check is the in-cluster
+backstop. The ApplicationSet is created in the tenant namespace, so the applicationset-controller
+must run with `--applicationset-namespaces=*` (and `--enable-scm-providers=false` alongside it).
 
 **Pruning safety.** `applicationSet.syncPolicy` defaults to `applicationsSync: create-update` and
 `preserveResourcesOnDeletion: true`, so a broken or empty `projects.yaml` cannot delete existing
 projects (and their namespaces). With `create-update`, a project dropped from the generator is
-**not** auto-deleted — removal is a deliberate admin action. The `applicationsSync` policy only
-takes effect when the applicationset-controller runs with `--enable-policy-override`; set
-`applicationsSync: ""` to allow automatic deletion of dropped projects.
+**not** auto-deleted — removal is a deliberate admin action. Set `applicationsSync: ""` to allow
+automatic deletion of dropped projects.
 
 ```yaml
 applicationSet:

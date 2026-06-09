@@ -15,13 +15,13 @@ tenantNamespace:
   annotations: {}
 
 # -- Opt-in self-service projects: discover them from a tenant-owned git repo via an ApplicationSet instead of the `projects` loop.
-# Tenants may only set `application.source.{path,targetRevision,helm}`; admin `projects.<name>` entries win.
+# Tenants may only set the `application` block (an unauthorized source.repoURL is rejected by the `<tenant>-apps` AppProject); admin `projects.<name>` entries win.
 # @default -- See [values.yaml](values.yaml)
 applicationSet:
   # -- Enable self-service projects. Mutually exclusive with the `projects` loop.
   enabled: false
   syncPolicy:
-    # -- `create-only` | `create-update` | `create-delete`. `create-update` keeps projects dropped from the generator (removal becomes manual); needs the controller `--enable-policy-override` flag. Set "" to allow auto-deletion.
+    # -- `create-only` | `create-update` | `create-delete`. `create-update` keeps projects dropped from the generator (removal becomes manual). Set "" to allow auto-deletion.
     applicationsSync: create-update
     # -- Keep the generated Applications' resources when the ApplicationSet is deleted.
     preserveResourcesOnDeletion: true
