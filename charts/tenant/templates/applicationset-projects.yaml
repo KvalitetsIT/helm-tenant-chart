@@ -7,7 +7,7 @@ apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
   name: {{ $tenantName }}-projects
-  namespace: {{ .Values.argoNamespace }}
+  namespace: {{ $tenantName }}
   labels:
     {{- include "tenant.labels" . | nindent 4 }}
   annotations:
@@ -64,18 +64,13 @@ spec:
       syncPolicy:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-  # Effective valuesObject = admin base + whitelisted tenant source + admin projects.<name> override (admin wins).
+  # Effective valuesObject: admin base, then the tenant application block, then the admin project override (admin wins).
+  # Only the tenant application is read, so quota and roles etc. stay admin-controlled. An unauthorized repoURL is rejected by the AppProject.
   templatePatch: |
 {{ printf "    {{- $base := `%s` | fromJson -}}" (include "tenant.applicationSetBase" .) }}
 {{ printf "    {{- $overrides := `%s` | fromJson -}}" (include "tenant.applicationSetOverrides" .) }}
 {{ `    {{- $v := deepCopy $base -}}
-    {{- $src := dict -}}
-    {{- with .application }}{{- with .source -}}
-    {{- if .path }}{{- $_ := set $src "path" .path -}}{{- end -}}
-    {{- if .targetRevision }}{{- $_ := set $src "targetRevision" .targetRevision -}}{{- end -}}
-    {{- if .helm }}{{- $_ := set $src "helm" .helm -}}{{- end -}}
-    {{- end }}{{- end -}}
-    {{- $v = mergeOverwrite $v (dict "application" (dict "source" $src)) -}}
+    {{- $v = mergeOverwrite $v (dict "application" (.application | default dict)) -}}
     {{- $v = mergeOverwrite $v (index $overrides .name | default dict) -}}
     {{- $_ := set $v "projectName" .name -}}
     {{- (dict "spec" (dict "source" (dict "helm" (dict "valuesObject" $v)))) | toYaml -}}` }}
