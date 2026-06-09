@@ -10,10 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 - `appProject.namespaceResourceBlacklist` — `GrafanaInstance`, `GrafanaOrg`, and `GrafanaOrgDatasource` from `grafana-org-operator.kubitus-project.gitlab.io` are now blacklisted by default. Tenants can only deploy `GrafanaOrgDashboard` resources from the Grafana org operator into their project namespaces.
-
-## [2.1.3] - 2026-06-08
-
-### Changed
+- `appProject.namespaceResourceBlacklist` — all `keycloak.hostzero.com` resource kinds except `KeycloakClient` are now blacklisted by default. Tenants can only deploy `KeycloakClient` resources from the Keycloak operator into their project namespaces.
 - `auditlog.tenantName` value added — allows the tenant chart to inject the tenant name via `projectDefaults.auditlog.tenantName`, falling back to the top-level `tenantName` if not set.
 - Removed `pod_ip` from the Vector sidecar VRL — it was never used as a Loki label and is not forwarded to the aggregator.
 
