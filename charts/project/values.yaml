@@ -52,6 +52,36 @@ appProject:
       kind: GrafanaOrg
     - group: grafana-org-operator.kubitus-project.gitlab.io
       kind: GrafanaOrgDatasource
+    - group: keycloak.hostzero.com
+      kind: KeycloakAuthenticationFlow
+    - group: keycloak.hostzero.com
+      kind: KeycloakClientScope
+    - group: keycloak.hostzero.com
+      kind: KeycloakComponent
+    - group: keycloak.hostzero.com
+      kind: KeycloakGroup
+    - group: keycloak.hostzero.com
+      kind: KeycloakIdentityProvider
+    - group: keycloak.hostzero.com
+      kind: KeycloakIdentityProviderMapper
+    - group: keycloak.hostzero.com
+      kind: KeycloakInstance
+    - group: keycloak.hostzero.com
+      kind: KeycloakOrganization
+    - group: keycloak.hostzero.com
+      kind: KeycloakProtocolMapper
+    - group: keycloak.hostzero.com
+      kind: KeycloakRealm
+    - group: keycloak.hostzero.com
+      kind: KeycloakRequiredAction
+    - group: keycloak.hostzero.com
+      kind: KeycloakRole
+    - group: keycloak.hostzero.com
+      kind: KeycloakRoleMapping
+    - group: keycloak.hostzero.com
+      kind: KeycloakUser
+    - group: keycloak.hostzero.com
+      kind: KeycloakUserCredential
   # -- Optional. RBAC roles for the AppProject.
   # Supports `{tenant}` and `{project}` placeholder substitution.
   # Override or extend per project via `projects.<name>.appProject.roles` in the tenant chart.
