@@ -8,6 +8,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Changed
+- `appProject.namespaceResourceBlacklist` — `GrafanaInstance`, `GrafanaOrg`, and `GrafanaOrgDatasource` from `grafana-org-operator.kubitus-project.gitlab.io` are now blacklisted by default. Tenants can only deploy `GrafanaOrgDashboard` resources from the Grafana org operator into their project namespaces.
+
 ## [2.1.3] - 2026-06-08
 
 ### Changed

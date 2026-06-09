@@ -36,6 +36,7 @@ appProject:
       kind: "*"
   # -- Optional. Kubernetes resource kinds explicitly denied in the project namespace.
   # Prevents tenants from managing resources that are owned by the tenant chart.
+  # @default -- See [values.yaml](values.yaml)
   namespaceResourceBlacklist:
     - group: rbac.authorization.k8s.io
       kind: Role
@@ -45,6 +46,12 @@ appProject:
       kind: ResourceQuota
     - group: ""
       kind: LimitRange
+    - group: grafana-org-operator.kubitus-project.gitlab.io
+      kind: GrafanaInstance
+    - group: grafana-org-operator.kubitus-project.gitlab.io
+      kind: GrafanaOrg
+    - group: grafana-org-operator.kubitus-project.gitlab.io
+      kind: GrafanaOrgDatasource
   # -- Optional. RBAC roles for the AppProject.
   # Supports `{tenant}` and `{project}` placeholder substitution.
   # Override or extend per project via `projects.<name>.appProject.roles` in the tenant chart.
