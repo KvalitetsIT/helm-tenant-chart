@@ -155,6 +155,9 @@ grafanaOrg:
     - group: cluster-admin
       role: Admin
       provider: generic_oauth
+    - group: cluster-readonly
+      role: Viewer
+      provider: generic_oauth
     - group: '{{ include "tenant.name" . }}-developer'
       role: Editor
       provider: generic_oauth
