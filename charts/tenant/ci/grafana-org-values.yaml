@@ -15,5 +15,6 @@ projectDefaults:
         limits.memory: "8Gi"
         requests.storage: "10Gi"
 
-keycloakGroup:
+grafanaOrg:
   enabled: true
+  orgName: acme

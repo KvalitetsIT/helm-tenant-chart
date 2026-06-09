@@ -78,6 +78,11 @@ A Helm chart for creating a new tenant in the Kithosting platform
 | keycloakGroup.namespace | string | `"auth"` | Namespace where the KeycloakGroup resource is created. |
 | keycloakGroup.realmRef | string | `"infrastructure"` | Keycloak realm to create the group in. |
 | keycloakGroup.parentGroupRef | string | `"tenants"` | Parent group under which the tenant group is nested. |
+| grafanaOrg.enabled | bool | `false` | Enable GrafanaOrg and GrafanaOrgDatasource resources. Also requires the grafana-org-operator CRD to be present in the cluster. |
+| grafanaOrg.grafanaInstanceRef | string | `"monitoring/grafana"` | Cross-namespace ref to the GrafanaInstance. |
+| grafanaOrg.orgName | string | `""` | Grafana display name for the org. Defaults to the tenant name. |
+| grafanaOrg.orgMapping | list | See [values.yaml](values.yaml) | OIDC group → Grafana role mappings. |
+| grafanaOrg.datasources | object | See [values.yaml](values.yaml) | Map of datasources to provision under this org. Loki and Prometheus are pre-configured with standard cluster-local endpoints. `secureJsonData.httpHeaderValue1` auto-defaults to the release namespace if not set, which populates the tenant-isolation header (X-Scope-OrgId / X-Namespace). |
 
 ## Architecture
 

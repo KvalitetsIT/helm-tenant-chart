@@ -1,0 +1,28 @@
+{{- if and .Values.grafanaOrg.enabled (.Capabilities.APIVersions.Has "grafana-org-operator.kubitus-project.gitlab.io/v1beta1") }}
+{{- $tenantName := include "tenant.name" . }}
+{{- $orgRef := printf "%s-grafana-org" $tenantName }}
+{{- range $key, $ds := .Values.grafanaOrg.datasources }}
+---
+apiVersion: grafana-org-operator.kubitus-project.gitlab.io/v1beta1
+kind: GrafanaOrgDatasource
+metadata:
+  name: {{ $tenantName }}-grafana-datasource-{{ $key }}
+  namespace: tenants
+  labels:
+    {{- include "tenant.labels" $ | nindent 4 }}
+spec:
+  grafanaOrgRef: {{ $orgRef }}
+  name: {{ required (printf "grafanaOrg.datasources.%s.name is required" $key) $ds.name }}
+  type: {{ required (printf "grafanaOrg.datasources.%s.type is required" $key) $ds.type }}
+  url: {{ required (printf "grafanaOrg.datasources.%s.url is required" $key) $ds.url }}
+  {{- with $ds.jsonData }}
+  jsonData:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- $secureJson := $ds.secureJsonData | default dict | deepCopy }}
+  {{- $headerVal := tpl (get $secureJson "httpHeaderValue1") $ }}
+  {{- $_ := set $secureJson "httpHeaderValue1" $headerVal }}
+  secureJsonData:
+    {{- toYaml $secureJson | nindent 4 }}
+{{- end }}
+{{- end }}
