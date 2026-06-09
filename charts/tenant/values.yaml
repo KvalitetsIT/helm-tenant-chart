@@ -107,3 +107,25 @@ projectDefaults:
 # Each key becomes a project named `<tenant>-<key>`.
 # See [Projects](#projects) for the full schema and examples.
 projects: {}
+
+# -----------------------------------------------------------------------
+# KEYCLOAK GROUP
+# Creates a KeycloakGroup for the tenant in Keycloak.
+# Requires the keycloak-operator CRD to be installed on the cluster
+# (keycloak.hostzero.com/v1beta1).
+# -----------------------------------------------------------------------
+
+# @default -- See [values.yaml](values.yaml)
+keycloakGroup:
+  # -- Enable KeycloakGroup resource creation.
+  # Also requires the keycloak-operator CRD to be present in the cluster.
+  enabled: false
+
+  # -- Namespace where the KeycloakGroup resource is created.
+  namespace: auth
+
+  # -- Keycloak realm to create the group in.
+  realmRef: infrastructure
+
+  # -- Parent group under which the tenant group is nested.
+  parentGroupRef: tenants

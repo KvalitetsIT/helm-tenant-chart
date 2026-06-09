@@ -30,10 +30,9 @@ data:
           .kubernetes.pod_name = "${POD_NAME:-unknown}"
           .kubernetes.pod_namespace = "${POD_NAMESPACE:-unknown}"
           .kubernetes.node_name = "${NODE_NAME:-unknown}"
-          .kubernetes.pod_ip = "${POD_IP:-unknown}"
           .kubernetes.app_label = "${APP_LABEL:-unknown}"
           .kubernetes.namespace_labels = {}
-          .kubernetes.namespace_labels."tenant.kitkube.dk/name" = {{ .Values.tenantName | quote }}
+          .kubernetes.namespace_labels."tenant.kitkube.dk/name" = {{ default .Values.tenantName .Values.auditlog.tenantName | quote }}
     sinks:
       audit_vector_aggregator:
         type: vector
