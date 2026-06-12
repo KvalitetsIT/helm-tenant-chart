@@ -415,14 +415,13 @@ auditlog:
 kyvernoPolicyExceptions:
   # -- Optional. Enable or disable all PolicyException resources for this project.
   enabled: false
-  # -- Optional. Namespace where PolicyException resources are created.
-  namespace: kyverno
-  # -- Optional. Map of PolicyException resources.
-  # Each key is appended to the project namespace to form the resource name, e.g. `<tenant>-<project>-<key>`.
+  # -- Optional. Map of PolicyException resources. Each key becomes the resource name.
+  # PolicyExceptions are created in the project namespace (`<tenant>-<project>`).
+  # Kyverno must be configured with `exceptionNamespace: "*"` to pick them up.
   # Set `enabled: false` on an individual entry to skip it without removing it from the map.
   # @default -- {}
   exceptions: {}
-    # Example — exempt the project namespace from two ValidatingPolicies:
+    # Example — exempt this project namespace from two ValidatingPolicies:
     # drop-all-capabilities:
     #   policyRefs:
     #     - name: drop-all-capabilities

@@ -128,8 +128,6 @@ projects:
     # See https://kyverno.io/docs/guides/exceptions/ for details.
     kyvernoPolicyExceptions:
       enabled: true
-      # -- Optional. Namespace where PolicyException resources are created. Defaults to kyverno.
-      namespace: kyverno
       exceptions:
         drop-all-capabilities:
           policyRefs:
