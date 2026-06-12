@@ -82,6 +82,10 @@ appProject:
       kind: KeycloakUser
     - group: keycloak.hostzero.com
       kind: KeycloakUserCredential
+    - group: policies.kyverno.io
+      kind: PolicyException
+    - group: kyverno.io
+      kind: PolicyException
   # -- Optional. RBAC roles for the AppProject.
   # Supports `{tenant}` and `{project}` placeholder substitution.
   # Override or extend per project via `projects.<name>.appProject.roles` in the tenant chart.
@@ -398,6 +402,42 @@ auditlog:
     data:
       type: object
       required: false
+
+# -- Optional. Kyverno PolicyException resources for this project.
+# `PolicyException` resources (`policies.kyverno.io/v1alpha1`) support both `ValidatingPolicy`
+# and legacy `ClusterPolicy` policyRefs, and are evaluated with CEL matchConditions.
+# Exceptions are created in the Kyverno namespace. Resource names are automatically prefixed
+# with the project namespace (`<tenant>-<project>`) to prevent naming collisions across projects.
+# Set via `projectDefaults.kyvernoPolicyExceptions` in the tenant chart to share a base set
+# across all projects, then override or extend per project.
+# See https://kyverno.io/docs/guides/exceptions/ for details.
+# @default -- See [values.yaml](values.yaml)
+kyvernoPolicyExceptions:
+  # -- Optional. Enable or disable all PolicyException resources for this project.
+  enabled: false
+  # -- Optional. Namespace where PolicyException resources are created.
+  namespace: kyverno
+  # -- Optional. Map of PolicyException resources.
+  # Each key is appended to the project namespace to form the resource name, e.g. `<tenant>-<project>-<key>`.
+  # Set `enabled: false` on an individual entry to skip it without removing it from the map.
+  # @default -- {}
+  exceptions: {}
+    # Example — exempt the project namespace from two ValidatingPolicies:
+    # drop-all-capabilities:
+    #   policyRefs:
+    #     - name: drop-all-capabilities
+    #       kind: ValidatingPolicy
+    #   matchConditions:
+    #     - name: match-project-namespace
+    #       expression: "object.metadata.namespace == '<tenant>-<project>'"
+    # require-ro-rootfs:
+    #   enabled: false   # temporarily disabled
+    #   policyRefs:
+    #     - name: require-ro-rootfs
+    #       kind: ValidatingPolicy
+    #   matchConditions:
+    #     - name: match-project-namespace
+    #       expression: "object.metadata.namespace == '<tenant>-<project>'"
 
 # -- Optional. Values passed to the `templates` subchart for additional resources.
 # Use `networkPolicies` and `ciliumNetworkPolicies` to add extra policies beyond the project defaults

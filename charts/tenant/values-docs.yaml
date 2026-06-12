@@ -122,6 +122,32 @@ projects:
               cpu: 25m
               memory: 32Mi
 
+    # -- Optional. Kyverno PolicyException resources for this project.
+    # Overrides or extends `projectDefaults.kyvernoPolicyExceptions`.
+    # Resource names are prefixed with the project namespace (`<tenant>-<project>`).
+    # See https://kyverno.io/docs/guides/exceptions/ for details.
+    kyvernoPolicyExceptions:
+      enabled: true
+      # -- Optional. Namespace where PolicyException resources are created. Defaults to kyverno.
+      namespace: kyverno
+      exceptions:
+        drop-all-capabilities:
+          policyRefs:
+            - name: drop-all-capabilities
+              kind: ValidatingPolicy
+          matchConditions:
+            - name: match-project-namespace
+              expression: "object.metadata.namespace == '<tenant>-<project>'"
+        require-ro-rootfs:
+          # -- Set enabled: false to temporarily disable an exception without removing it.
+          enabled: false
+          policyRefs:
+            - name: require-ro-rootfs
+              kind: ValidatingPolicy
+          matchConditions:
+            - name: match-project-namespace
+              expression: "object.metadata.namespace == '<tenant>-<project>'"
+
     # -- Optional. Enable or disable the `templates` subchart for this project.
     # When false, no NetworkPolicies (default or custom) are rendered.
     # Overrides `projectDefaults.templates`.

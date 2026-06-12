@@ -23,67 +23,6 @@ A Helm chart for creating a new tenant in the Kithosting platform
 |------------|------|---------|
 | https://raw.githubusercontent.com/KvalitetsIT/helm-repo/master/ | templates | 2.2.0 |
 
-## Values
-
-| Key | Type | Default | Description |
-|-----|------|---------|-------------|
-| nameOverride | string | `""` | Optional. Name override for the tenant. |
-| argoNamespace | string | `"argocd"` | Optional. Namespace where ArgoCD is installed. AppProject resources must live in the ArgoCD root namespace. |
-| roleGroups | object | `{}` | Optional. Map of role name → AD/OIDC group list applied globally to all AppProjects. Acts as the lowest-precedence default — per-project `appProject.roles.<name>.groups` always wins. |
-| tenantNamespace.labels | object | `{}` | Optional. Additional labels for the tenant namespace. |
-| tenantNamespace.annotations | object | `{}` | Optional. Additional annotations for the tenant namespace. |
-| applicationSet | object | See [values.yaml](values.yaml) | Opt-in self-service projects: discover them from a tenant-owned git repo via an ApplicationSet instead of the `projects` loop. Tenants may only set the `application` block (an unauthorized source.repoURL is rejected by the `<tenant>-apps` AppProject); admin `projects.<name>` entries win. |
-| applicationSet.enabled | bool | `false` | Enable self-service projects. Mutually exclusive with the `projects` loop. |
-| applicationSet.syncPolicy.applicationsSync | string | `"create-update"` | `create-only` | `create-update` | `create-delete`. `create-update` keeps projects dropped from the generator (removal becomes manual). Set "" to allow auto-deletion. |
-| applicationSet.syncPolicy.preserveResourcesOnDeletion | bool | `true` | Keep the generated Applications' resources when the ApplicationSet is deleted. |
-| applicationSet.generator.git.repoURL | string | `""` | Required. Git repo holding the tenant projects file. |
-| applicationSet.generator.git.revision | string | `"main"` | Git branch, tag, or commit SHA. |
-| applicationSet.generator.git.files | list | `[{"path":"projects.yaml"}]` | File(s) holding the `projects` map (same shape as the admin map). |
-| projectDefaults | object | See [values.yaml](values.yaml) | Shared defaults applied to every project. All keys are deep-merged with `projects.<name>` — project values win. See the [project chart values](../project/README.md#values) for the full schema, including `limitRange`, `templates`, `appProject`, and `namespace`. |
-| projectDefaults.projectApplication | object | See [values.yaml](values.yaml) | Default deployment config for `<project>-project` Applications (runs the project chart). Governed by the `<tenant>-projects` AppProject. Per-project override: `projects.<name>.projectApplication`. |
-| projectDefaults.projectApplication.source.repoURL | string | `"https://raw.githubusercontent.com/KvalitetsIT/helm-repo/master/"` | Required. OCI/Helm repository URL for the project chart. |
-| projectDefaults.projectApplication.source.chart | string | `"project"` | Required. Chart name within the repository. |
-| projectDefaults.projectApplication.source.targetRevision | string | `"2.1.*"` | Required. Chart version to deploy. Supports semver ranges. |
-| projectDefaults.projectApplication.syncPolicy | object | `{"automated":{"prune":true,"selfHeal":true}}` | Optional. Sync policy applied to all project Applications. |
-| projectDefaults.application | object | See [values.yaml](values.yaml) | Default config for `<project>-apps` Applications (app-of-apps). Governed by the `<tenant>-apps` AppProject. `source.path` cannot be set here — it must be provided per project. Per-project override: `projects.<name>.application`. |
-| projectDefaults.application.source.repoURL | string | `""` | Required. Default git repository URL for the app-of-apps. |
-| projectDefaults.application.source.targetRevision | string | `""` | Required. Default git branch, tag, or commit SHA. |
-| projectDefaults.application.source.helm | object | `{"valueFiles":["values.yaml"]}` | Optional. Default Helm value files passed to the app-of-apps Application. Per-project overrides replace this list entirely. |
-| projectDefaults.resourceQuota | object | See [values.yaml](values.yaml) | Default ResourceQuota passed to every project via the project chart. `limits.cpu`, `limits.memory`, and `requests.storage` have no project chart defaults — they must be set here or per project. Per-project override: `projects.<name>.resourceQuota`. |
-| projectDefaults.resourceQuota.spec.hard."limits.cpu" | string | `""` | Required |
-| projectDefaults.resourceQuota.spec.hard."limits.memory" | string | `""` | Required |
-| projectDefaults.resourceQuota.spec.hard."requests.storage" | string | `""` | Required |
-| projects | object | See below | Map of tenant projects to create. Each key becomes a project named `<tenant>-<key>`. See the [project chart values](../project/README.md#values) for the full schema and the default values. |
-| projects.\<project-name>.namespace | object | `{"annotations":{},"labels":{}}` | Optional. Labels and annotations for the project namespace. Overrides `projectDefaults.namespace`. |
-| projects.\<project-name>.projectApplication.source.targetRevision | string | `"1.*"` | Optional. Pin a specific project chart version for this project. Overrides `projectDefaults.projectApplication.source.targetRevision`. |
-| projects.\<project-name>.appProject | object | See below | Optional. Additional RBAC roles for the per-project AppProject. Merged on top of the project chart's default roles (viewer, developer). Supports `{tenant}` and `{project}` placeholder substitution. Overrides `projectDefaults.appProject`. |
-| projects.\<project-name>.appProject.sourceRepos | list | `[]` | Optional. Additional source repositories allowed in the per-project AppProject. `application.source.repoURL` and the KvalitetsIT helm repo are always included automatically. Entries with an `oci://` prefix are added twice — once with the prefix and once without — as a workaround for ArgoCD's inconsistent OCI URL matching. Overrides `projectDefaults.appProject.sourceRepos`. |
-| projects.\<project-name>.appProject.namespaceResourceWhitelist | list | `[{"group":"*","kind":"*"}]` | Optional. Kubernetes resource kinds allowed in the project namespace. Wildcard allows all — tighten per project as needed. Overrides `projectDefaults.appProject.namespaceResourceWhitelist`. |
-| projects.\<project-name>.appProject.namespaceResourceBlacklist | list | `[{"group":"rbac.authorization.k8s.io","kind":"Role"},{"group":"rbac.authorization.k8s.io","kind":"RoleBinding"},{"group":"","kind":"ResourceQuota"},{"group":"","kind":"LimitRange"}]` | Optional. Kubernetes resource kinds explicitly denied in the project namespace. Prevents tenants from managing resources that are owned by the tenant chart. Overrides `projectDefaults.appProject.namespaceResourceBlacklist`. |
-| projects.\<project-name>.appProject.roles | object | See below | Optional. RBAC roles for the AppProject. Supports `{tenant}` and `{project}` placeholder substitution. Overrides `projectDefaults.appProject.roles`. |
-| projects.\<project-name>.appProject.roles.viewer | object | `{"description":"Read-only access to {project} workloads","groups":["{tenant}-viewer"],"policies":["applications, get, {project}/{tenant}/*, allow","logs, get, {project}/*, allow"]}` | Optional. Read-only role — grants view and log access to project workloads. |
-| projects.\<project-name>.appProject.roles.viewer.groups | list | `["{tenant}-viewer"]` | Optional. AD/OIDC groups granted the viewer role. |
-| projects.\<project-name>.appProject.roles.viewer.policies | list | `["applications, get, {project}/{tenant}/*, allow","logs, get, {project}/*, allow"]` | Optional. ArgoCD RBAC policy strings for the viewer role. |
-| projects.\<project-name>.appProject.roles.developer | object | `{"description":"Can sync and all actions on {project} workloads","groups":["{tenant}-developer"],"policies":["applications, get, {project}/{tenant}/*, allow","logs, get, {project}/*, allow","applications, update, {project}/{tenant}/*, allow","applications, update/*, {project}/{tenant}/*, allow","applications, delete, {project}/{tenant}/*, allow","applications, delete/*, {project}/{tenant}/*, allow","applications, sync, {project}/{tenant}/*, allow","applications, action/*, {project}/{tenant}/*, allow"]}` | Optional. Developer role — grants full sync and action access to project workloads. |
-| projects.\<project-name>.appProject.roles.developer.groups | list | `["{tenant}-developer"]` | Optional. AD/OIDC groups granted the developer role. |
-| projects.\<project-name>.appProject.roles.developer.policies | list | `["applications, get, {project}/{tenant}/*, allow","logs, get, {project}/*, allow","applications, update, {project}/{tenant}/*, allow","applications, update/*, {project}/{tenant}/*, allow","applications, delete, {project}/{tenant}/*, allow","applications, delete/*, {project}/{tenant}/*, allow","applications, sync, {project}/{tenant}/*, allow","applications, action/*, {project}/{tenant}/*, allow"]` | Optional. ArgoCD RBAC policy strings for the developer role. |
-| projects.\<project-name>.application.source.path | string | `"<project>/apps"` | Required. Path to the app-of-apps directory in the git repository. |
-| projects.\<project-name>.application.source.repoURL | string | `"https://github.com/example/tenant-repo.git"` | Optional. Git repository URL. Overrides `projectDefaults.application.source.repoURL`. |
-| projects.\<project-name>.application.source.targetRevision | string | `"main"` | Optional. Git branch, tag, or commit SHA. Overrides `projectDefaults.application.source.targetRevision`. |
-| projects.\<project-name>.application.source.helm.valueFiles | list | `["values.yaml"]` | Optional. Helm value files. Overrides `projectDefaults.application.source.helm.valueFiles`. |
-| projects.\<project-name>.resourceQuota | object | `{"spec":{"hard":{"limits.cpu":"","limits.memory":"","requests.storage":""}}}` | Required if not set in projectDefaults. ResourceQuota hard limits. Overrides `projectDefaults.resourceQuota`. |
-| projects.\<project-name>.limitRange | object | `{"enabled":false,"spec":{"limits":[{"default":{"cpu":"50m","memory":"64Mi"},"defaultRequest":{"cpu":"25m","memory":"32Mi"},"type":"Container"}]}}` | Optional. LimitRange configuration. Overrides `projectDefaults.limitRange`. |
-| projects.\<project-name>.templates | object | `{"enabled":true}` | Optional. Enable or disable the `templates` subchart for this project. When false, no NetworkPolicies (default or custom) are rendered. Overrides `projectDefaults.templates`. |
-| keycloakGroup.enabled | bool | `false` | Enable KeycloakGroup resource creation. Also requires the keycloak-operator CRD to be present in the cluster. |
-| keycloakGroup.namespace | string | `"auth"` | Namespace where the KeycloakGroup resource is created. |
-| keycloakGroup.realmRef | string | `"infrastructure"` | Keycloak realm to create the group in. |
-| keycloakGroup.parentGroupRef | string | `"tenants"` | Parent group under which the tenant group is nested. |
-| grafanaOrg.enabled | bool | `false` | Enable GrafanaOrg and GrafanaOrgDatasource resources. Also requires the grafana-org-operator CRD to be present in the cluster. |
-| grafanaOrg.grafanaInstanceRef | string | `"monitoring/grafana"` | Cross-namespace ref to the GrafanaInstance. |
-| grafanaOrg.orgName | string | `""` | Grafana display name for the org. Defaults to the tenant name. |
-| grafanaOrg.orgMapping | list | See [values.yaml](values.yaml) | OIDC group → Grafana role mappings. |
-| grafanaOrg.datasources | object | See [values.yaml](values.yaml) | Map of datasources to provision under this org. Loki and Prometheus are pre-configured with standard cluster-local endpoints. `secureJsonData.httpHeaderValue1` auto-defaults to the release namespace if not set, which populates the tenant-isolation header (X-Scope-OrgId / X-Namespace). |
-
 ## Architecture
 
 The tenant chart sets up the full ArgoCD multi-tenancy structure for one tenant. It creates two

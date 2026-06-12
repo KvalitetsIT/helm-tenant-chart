@@ -1,0 +1,42 @@
+projectDefaults:
+  application:
+    source:
+      repoURL: "https://github.com/example/tenant-repo.git"
+      targetRevision: "main"
+  resourceQuota:
+    spec:
+      hard:
+        limits.cpu: "8"
+        limits.memory: "16Gi"
+        requests.storage: "200Gi"
+
+projects:
+  reporting:
+    application:
+      source:
+        path: "reporting/apps"
+    kyvernoPolicyExceptions:
+      enabled: true
+      exceptions:
+        drop-all-capabilities:
+          policyRefs:
+            - name: drop-all-capabilities
+              kind: ValidatingPolicy
+          matchConditions:
+            - name: match-project-namespace
+              expression: "object.metadata.namespace == 'release-name-reporting'"
+        require-ro-rootfs:
+          policyRefs:
+            - name: require-ro-rootfs
+              kind: ValidatingPolicy
+          matchConditions:
+            - name: match-project-namespace
+              expression: "object.metadata.namespace == 'release-name-reporting'"
+        require-requests-limits:
+          enabled: false
+          policyRefs:
+            - name: require-requests-limits
+              kind: ValidatingPolicy
+          matchConditions:
+            - name: match-project-namespace
+              expression: "object.metadata.namespace == 'release-name-reporting'"
