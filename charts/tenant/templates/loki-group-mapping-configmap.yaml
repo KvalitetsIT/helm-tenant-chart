@@ -1,0 +1,17 @@
+{{- $tenantName := include "tenant.name" . }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: loki-group-mapping
+  namespace: {{ $tenantName }}
+  labels:
+    {{- include "tenant.labels" . | nindent 4 }}
+    tenant.kitkube.dk/name: {{ $tenantName }}
+data:
+  groups: |
+    {{- range (index .Values.roleGroups "viewer") | default (list (printf "%s-viewer" $tenantName)) }}
+    {{ . }}
+    {{- end }}
+    {{- range (index .Values.roleGroups "developer") | default (list (printf "%s-developer" $tenantName)) }}
+    {{ . }}
+    {{- end }}
