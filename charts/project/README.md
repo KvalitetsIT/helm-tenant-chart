@@ -60,7 +60,7 @@ Deploys project infrastructure (Namespace, AppProject, app-of-apps Application, 
 | waypoint.resources.waypoint-options | object | See [values.yaml](values.yaml) | ConfigMap passed to the Gateway parametersRef. Controls topology spread, HPA, and PDB for waypoint pods. |
 | waypoint.resources.waypoint | object | See [values.yaml](values.yaml) | Istio Waypoint Gateway resource. |
 | waypoint.networkPolicies | object | See [values.yaml](values.yaml) | Optional. Map of NetworkPolicy resources to render when `waypoint.enabled` is true. Each key becomes the NetworkPolicy name. Rendered via `templates.networkPolicy`. |
-| waypoint.networkPolicies.waypoint | object | See [values.yaml](values.yaml) | NetworkPolicy for waypoint pods. Allows HBONE ingress, Prometheus scraping, and egress to istiod, kube-dns, and same-namespace pods. |
+| waypoint.networkPolicies.waypoint | object | See [values.yaml](values.yaml) | NetworkPolicy for waypoint pods. Allows HBONE ingress, Prometheus scraping, and egress to istiod, and same-namespace pods. |
 | waypoint.networkPolicies.ingressgateway-acme-solver | object | See [values.yaml](values.yaml) | NetworkPolicy allowing ingressgateway to reach cert-manager ACME HTTP-01 solver pods. |
 | defaultNetworkPolicies | object | See [values.yaml](values.yaml) | Optional. Default network policies deployed in every project namespace. Rendered directly by the project chart via the `templates` named-template defines. Disable the whole bundle with `enabled: false`, or opt out of individual entries with `enabled: false` on the entry. |
 | defaultNetworkPolicies.enabled | bool | `true` | Optional. Enable or disable all default network policies. |
