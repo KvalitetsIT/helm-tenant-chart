@@ -219,7 +219,7 @@ waypoint:
   # Each key becomes the NetworkPolicy name. Rendered via `templates.networkPolicy`.
   # @default -- See [values.yaml](values.yaml)
   networkPolicies:
-    # -- NetworkPolicy for waypoint pods. Allows HBONE ingress, Prometheus scraping, and egress to istiod, kube-dns, and same-namespace pods.
+    # -- NetworkPolicy for waypoint pods. Allows HBONE ingress, Prometheus scraping, and egress to istiod, and same-namespace pods.
     # @default -- See [values.yaml](values.yaml)
     waypoint:
       enabled: true
@@ -266,19 +266,6 @@ waypoint:
                   app: istiod
           ports:
             - port: 15012
-              protocol: TCP
-        # DNS — kube-dns in kube-system
-        - to:
-            - namespaceSelector:
-                matchLabels:
-                  kubernetes.io/metadata.name: kube-system
-              podSelector:
-                matchLabels:
-                  k8s-app: kube-dns
-          ports:
-            - port: 53
-              protocol: UDP
-            - port: 53
               protocol: TCP
     # -- NetworkPolicy allowing ingressgateway to reach cert-manager ACME HTTP-01 solver pods.
     # @default -- See [values.yaml](values.yaml)
