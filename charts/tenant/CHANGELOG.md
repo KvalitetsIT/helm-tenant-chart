@@ -14,6 +14,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - `grafanaOrg` — opt-in Grafana organisation provisioning. When `grafanaOrg.enabled: true` and the `grafana-org-operator` CRD (`grafana-org-operator.kubitus-project.gitlab.io/v1beta1`) is present, renders a `GrafanaOrg` and one `GrafanaOrgDatasource` per entry in `grafanaOrg.datasources` in the `tenants` namespace. Loki and Prometheus datasources are pre-configured with standard cluster-local endpoints; `secureJsonData.httpHeaderValue1` auto-defaults to the release namespace for tenant-isolation headers. `orgName` defaults to the title-cased tenant name. `grafanaInstanceRef` defaults to `monitoring/grafana`.
 - `keycloakGroup` — opt-in Keycloak group provisioning. When `keycloakGroup.enabled: true` and the `keycloak-operator` CRD (`keycloak.hostzero.com/v1beta1`) is present, renders a `KeycloakGroup` in the `auth` namespace nested under the configured `parentGroupRef` (default: `tenants`) in the configured realm (default: `infrastructure`). Group name is always the tenant name.
 
+### Changed
+- Remove waypoint dns network policy as this is globally, in the namespace, controlled by the `allow-kube-dns`policy
+
 ## [2.1.0] - 2026-05-29
 
 ### Changed
