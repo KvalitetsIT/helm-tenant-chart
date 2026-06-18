@@ -1,0 +1,42 @@
+tenantName: acme
+projectName: policy-exceptions
+tenantAppProjectName: acme-apps
+
+application:
+  source:
+    path: policy-exceptions/apps
+    repoURL: https://github.com/example/tenant-repo.git
+    targetRevision: "main"
+
+resourceQuota:
+  spec:
+    hard:
+      limits.cpu: "4"
+      limits.memory: 8Gi
+      requests.storage: 100Gi
+
+kyvernoPolicyExceptions:
+  enabled: true
+  exceptions:
+    drop-all-capabilities:
+      policyRefs:
+        - name: drop-all-capabilities
+          kind: ValidatingPolicy
+      matchConditions:
+        - name: match-project-namespace
+          expression: "object.metadata.namespace == 'acme-policy-exceptions'"
+    require-ro-rootfs:
+      policyRefs:
+        - name: require-ro-rootfs
+          kind: ValidatingPolicy
+      matchConditions:
+        - name: match-project-namespace
+          expression: "object.metadata.namespace == 'acme-policy-exceptions'"
+    require-requests-limits:
+      enabled: false
+      policyRefs:
+        - name: require-requests-limits
+          kind: ValidatingPolicy
+      matchConditions:
+        - name: match-project-namespace
+          expression: "object.metadata.namespace == 'acme-policy-exceptions'"

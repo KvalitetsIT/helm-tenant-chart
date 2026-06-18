@@ -8,7 +8,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+- `kyvernoPolicyExceptions` values schema — documents the per-project `PolicyException` configuration consumed by the tenant chart. The project chart itself does not render PolicyException resources; they are rendered by the tenant chart so they can be created in the `kyverno` namespace.
+
 ### Changed
+- `appProject.namespaceResourceBlacklist` — `policies.kyverno.io/PolicyException` and `kyverno.io/PolicyException` are now blacklisted by default, preventing tenants from creating or managing Kyverno policy exceptions directly in their project namespaces.
 - `appProject.namespaceResourceBlacklist` — `GrafanaInstance`, `GrafanaOrg`, and `GrafanaOrgDatasource` from `grafana-org-operator.kubitus-project.gitlab.io` are now blacklisted by default. Tenants can only deploy `GrafanaOrgDashboard` resources from the Grafana org operator into their project namespaces.
 - `appProject.namespaceResourceBlacklist` — all `keycloak.hostzero.com` resource kinds except `KeycloakClient` are now blacklisted by default. Tenants can only deploy `KeycloakClient` resources from the Keycloak operator into their project namespaces.
 - `auditlog.tenantName` value added — allows the tenant chart to inject the tenant name via `projectDefaults.auditlog.tenantName`, falling back to the top-level `tenantName` if not set.

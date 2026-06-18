@@ -1,0 +1,18 @@
+{{- if .Values.kyvernoPolicyExceptions.enabled }}
+{{- $ctx := . }}
+{{- range $name, $exceptionWithEnabled := .Values.kyvernoPolicyExceptions.exceptions }}
+{{- if or (not (hasKey $exceptionWithEnabled "enabled")) $exceptionWithEnabled.enabled }}
+{{- $exception := omit $exceptionWithEnabled "enabled" -}}
+---
+apiVersion: policies.kyverno.io/v1alpha1
+kind: PolicyException
+metadata:
+  name: {{ $name }}
+  namespace: {{ include "project.projectNamespace" $ctx }}
+  labels:
+    {{- include "project.labels" $ctx | nindent 4 }}
+spec:
+  {{- toYaml $exception | nindent 2 }}
+{{- end }}
+{{- end }}
+{{- end }}
