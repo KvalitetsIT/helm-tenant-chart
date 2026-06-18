@@ -8,6 +8,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Changed
+- Changed `grafanaOrg.datasources.prometheus.url` default from `http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090` to `http://prom-label-proxy.monitoring.svc.cluster.local:8080` to reflect the new recommended cluster-local endpoint for tenant-isolated Prometheus access via the prom-label-proxy. Tenants using the old default must update their datasource URL to continue accessing Prometheus after upgrading.
+
 ## [2.2.0] - 2026-06-18
 
 ### Added
