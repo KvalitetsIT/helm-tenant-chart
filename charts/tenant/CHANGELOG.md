@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [2.2.0] - 2026-06-18
+
 ### Added
 - `kyvernoPolicyExceptions` — opt-in Kyverno `PolicyException` (`policies.kyverno.io/v1alpha1`) support. Configure exceptions per project under `projects.<name>.kyvernoPolicyExceptions` or share a base set via `projectDefaults.kyvernoPolicyExceptions`. Each exception specifies `policyRefs` (referencing `ValidatingPolicy` or `ClusterPolicy` by name) and CEL `matchConditions`. Resource names are automatically prefixed with the project namespace to prevent collisions in the `kyverno` namespace. Individual exceptions can be temporarily disabled with `enabled: false` without removing them from the map. Exceptions are rendered directly by the tenant chart (not the project chart) so they can be created in the `kyverno` namespace, which is outside the scope of the per-project AppProject.
 - Opt-in `applicationSet` self-service projects. When `applicationSet.enabled: true`, projects are discovered from a tenant-owned git repo (a `projects` map in a single file) via an ArgoCD ApplicationSet instead of the in-chart `projects` loop. The rendered project set is the **union** of the tenant repo's `projects` map and the admin `projects` map in this chart's values, so admins can both define their own projects and override tenant-created ones (matched by name, admin wins) — while tenants may only set the per-project `application` block. `projectDefaults` supplies the rest, and an unauthorized `application.source.repoURL` is rejected by the `<tenant>-apps` AppProject. The `<tenant>-projects` AppProject uses a `<tenant>-*` destination wildcard in this mode. The ApplicationSet is created in the tenant namespace, so the applicationset-controller must run with `--applicationset-namespaces=*` (and `--enable-scm-providers=false`, required alongside it).
@@ -16,6 +18,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - `keycloakGroup` — opt-in Keycloak group provisioning. When `keycloakGroup.enabled: true` and the `keycloak-operator` CRD (`keycloak.hostzero.com/v1beta1`) is present, renders a `KeycloakGroup` in the `auth` namespace nested under the configured `parentGroupRef` (default: `tenants`) in the configured realm (default: `infrastructure`). Group name is always the tenant name.
 
 ### Changed
+- Bumped `project` chart dependency from `2.1.*` to `2.2.*` to track the latest project chart minor release.
 - Remove waypoint dns network policy as this is globally, in the namespace, controlled by the `allow-kube-dns`policy
 
 ## [2.1.0] - 2026-05-29
