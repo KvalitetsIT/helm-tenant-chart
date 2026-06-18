@@ -183,7 +183,7 @@ grafanaOrg:
     prometheus:
       name: Prometheus
       type: prometheus
-      url: http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090
+      url: http://prom-label-proxy.monitoring.svc.cluster.local:8080
       jsonData:
         tlsSkipVerify: true
         httpHeaderName1: X-Namespace
