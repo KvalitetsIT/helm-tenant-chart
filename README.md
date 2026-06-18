@@ -54,7 +54,7 @@ RBAC roles, and configuration options.
 ## Example
 
 A complete, generic worked example of the recommended ArgoCD sync/prune policy across every
-layer (bootstrap → provisioning → app-of-apps → leaf → data) lives in
+layer (bootstrap -> provisioning -> app-of-apps -> leaf -> data) lives in
 [example/](example/README.md).
 
 ## Development

@@ -1,4 +1,4 @@
-# Layer 3 — Leaf workloads, rendered by argocd-apps. One Application per workload.
+# Layer 3 - Leaf workloads, rendered by argocd-apps. One Application per workload.
 # Lowest blast radius, so be aggressive: prune + self-heal. Override syncPolicy per app.
 
 # Sync policy anchor.
@@ -24,7 +24,7 @@ _inClusterServer: &inClusterServer https://kubernetes.default.svc
 
 argocd-apps:
   applications:
-    web-frontend:                      # stateless — base policy
+    web-frontend:                      # stateless - base policy
       <<: *appDefaults
       syncPolicy: *syncPolicy
       source:
@@ -34,7 +34,7 @@ argocd-apps:
         namespace: tenant-a-web
         server: *inClusterServer
 
-    web-database:                      # stateful — extend base, drop self-heal
+    web-database:                      # stateful - extend base, drop self-heal
       <<: *appDefaults
       syncPolicy:
         <<: *syncPolicy

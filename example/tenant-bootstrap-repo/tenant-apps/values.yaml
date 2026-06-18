@@ -1,4 +1,4 @@
-# Layer 0 — Bootstrap. One ArgoCD Application per tenant, rendered by argocd-apps.
+# Layer 0 - Bootstrap. One ArgoCD Application per tenant, rendered by argocd-apps.
 # Highest blast radius (a whole tenant): auto-sync, but every prune and cascade-delete
 # pauses for a manual confirmation in the UI. Needs ArgoCD 2.13+.
 

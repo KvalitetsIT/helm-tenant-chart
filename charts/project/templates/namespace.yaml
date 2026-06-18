@@ -13,7 +13,7 @@ metadata:
     {{- end }}
   annotations:
     argocd.argoproj.io/sync-wave: "-10"
-    # Never let ArgoCD prune the namespace — its deletion cascades to every workload + PVC inside.
+    # Never let ArgoCD prune the namespace - its deletion cascades to every workload + PVC inside.
     argocd.argoproj.io/sync-options: Prune=false
     helm.sh/resource-policy: keep
     {{- with .Values.namespace.annotations }}

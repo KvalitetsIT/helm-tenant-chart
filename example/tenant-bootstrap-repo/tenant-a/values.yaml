@@ -1,4 +1,4 @@
-# Layer 1 + 2 — values for the `tenant` chart (rendered by the Layer 0 Application).
+# Layer 1 + 2 - values for the `tenant` chart (rendered by the Layer 0 Application).
 # The L1/L2 sync policy ships as the tenant-chart default, so you only declare your
 # projects. Override per project under `projects.<name>.application.syncPolicy`.
 tenant:
