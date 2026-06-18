@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [2.2.0] - 2026-06-18
+
 ### Added
 - `kyvernoPolicyExceptions` values schema — documents the per-project `PolicyException` configuration consumed by the tenant chart. The project chart itself does not render PolicyException resources; they are rendered by the tenant chart so they can be created in the `kyverno` namespace.
 
