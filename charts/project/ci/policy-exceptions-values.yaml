@@ -1,10 +1,10 @@
 tenantName: acme
-projectName: reporting
+projectName: policy-exceptions
 tenantAppProjectName: acme-apps
 
 application:
   source:
-    path: reporting/apps
+    path: policy-exceptions/apps
     repoURL: https://github.com/example/tenant-repo.git
     targetRevision: "main"
 
@@ -24,14 +24,14 @@ kyvernoPolicyExceptions:
           kind: ValidatingPolicy
       matchConditions:
         - name: match-project-namespace
-          expression: "object.metadata.namespace == 'acme-reporting'"
+          expression: "object.metadata.namespace == 'acme-policy-exceptions'"
     require-ro-rootfs:
       policyRefs:
         - name: require-ro-rootfs
           kind: ValidatingPolicy
       matchConditions:
         - name: match-project-namespace
-          expression: "object.metadata.namespace == 'acme-reporting'"
+          expression: "object.metadata.namespace == 'acme-policy-exceptions'"
     require-requests-limits:
       enabled: false
       policyRefs:
@@ -39,4 +39,4 @@ kyvernoPolicyExceptions:
           kind: ValidatingPolicy
       matchConditions:
         - name: match-project-namespace
-          expression: "object.metadata.namespace == 'acme-reporting'"
+          expression: "object.metadata.namespace == 'acme-policy-exceptions'"
