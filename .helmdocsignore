@@ -1,0 +1,3 @@
+# The example/ tree contains a per-tenant wrapper chart for illustration only;
+# it is not a published chart, so exclude it from helm-docs generation.
+example/

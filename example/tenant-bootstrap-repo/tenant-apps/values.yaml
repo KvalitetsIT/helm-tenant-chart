@@ -1,0 +1,43 @@
+# Layer 0 — Bootstrap. One ArgoCD Application per tenant, rendered by argocd-apps.
+# Highest blast radius (a whole tenant): auto-sync, but every prune and cascade-delete
+# pauses for a manual confirmation in the UI. Needs ArgoCD 2.13+.
+
+# Sync policy anchor.
+_syncPolicy: &syncPolicy
+  automated:
+    prune: true
+    selfHeal: true
+  syncOptions:
+    - Prune=confirm
+    - Delete=confirm
+
+# Application defaults anchor.
+_appDefaults: &appDefaults
+  namespace: tenants
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  project: tenants
+
+# Tenant-bootstrap repository source anchor.
+_source: &source
+  repoURL: https://github.com/example-org/tenant-bootstrap.git
+  targetRevision: main
+
+# In-cluster destination server anchor.
+_inClusterServer: &inClusterServer https://kubernetes.default.svc
+
+argocd-apps:
+  applications:
+    # One entry per tenant; all inherit the anchors above. Override syncPolicy per app.
+    tenant-a:
+      <<: *appDefaults
+      syncPolicy: *syncPolicy
+      source:
+        <<: *source
+        path: tenant-a                 # dir holding this tenant's `tenant` values (Layer 1/2)
+        helm:
+          valueFiles:
+            - values.yaml
+      destination:
+        namespace: tenant-a
+        server: *inClusterServer

@@ -15,6 +15,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - `keycloakGroup` — opt-in Keycloak group provisioning. When `keycloakGroup.enabled: true` and the `keycloak-operator` CRD (`keycloak.hostzero.com/v1beta1`) is present, renders a `KeycloakGroup` in the `auth` namespace nested under the configured `parentGroupRef` (default: `tenants`) in the configured realm (default: `infrastructure`). Group name is always the tenant name.
 
 ### Changed
+- `projectDefaults.projectApplication.syncPolicy` — added `syncOptions: [Prune=confirm, Delete=confirm]`. The `<project>-project` Applications still auto-sync and self-heal, but pruning a project resource or cascade-deleting the Application now requires manual confirmation in the ArgoCD UI, so tenant/project structure is never destroyed by accident. Requires ArgoCD 2.13+.
 - Remove waypoint dns network policy as this is globally, in the namespace, controlled by the `allow-kube-dns`policy
 
 ## [2.1.0] - 2026-05-29

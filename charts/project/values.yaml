@@ -132,9 +132,15 @@ application:
       valueFiles:
         - values.yaml
   # -- Optional. Sync policy for the app-of-apps Application.
+  # `selfHeal: false` is the break-glass: an operator can pause or override a child app in
+  # the UI without the app-of-apps reverting it. `PruneLast` removes leaf apps only after
+  # the rest of the sync succeeds.
   syncPolicy:
     automated:
       prune: true
+      selfHeal: false
+    syncOptions:
+      - PruneLast=true
 
 resourceQuota:
   # -- Optional. Enable or disable the ResourceQuota resource.

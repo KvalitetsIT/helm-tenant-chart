@@ -62,10 +62,16 @@ projectDefaults:
       # -- Required. Chart version to deploy. Supports semver ranges.
       targetRevision: "2.1.*"
     # -- Optional. Sync policy applied to all project Applications.
+    # Prune and cascade-delete are gated behind manual confirmation (`Prune=confirm`,
+    # `Delete=confirm`): the `<project>-project` Applications auto-sync and self-heal, but
+    # structure is never deleted without an explicit click in the UI. Needs ArgoCD 2.13+.
     syncPolicy:
       automated:
         prune: true
         selfHeal: true
+      syncOptions:
+        - Prune=confirm
+        - Delete=confirm
 
   # -- Default config for `<project>-apps` Applications (app-of-apps).
   # Governed by the `<tenant>-apps` AppProject.
