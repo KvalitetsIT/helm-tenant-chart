@@ -141,6 +141,9 @@ jobs:
           kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/refs/tags/v1.5.1/config/crd/standard/gateway.networking.k8s.io_gateways.yaml
           wait_for_crd gateways.gateway.networking.k8s.io
 
+          kubectl apply -f https://raw.githubusercontent.com/kyverno/kyverno/refs/tags/v1.18.1/config/crds/policies.kyverno.io/policies.kyverno.io_policyexceptions.yaml
+          wait_for_crd policyexceptions.policies.kyverno.io
+
       - name: Pre-create required namespaces
         if: steps.list-changed.outputs.changed == 'true'
         run: |
