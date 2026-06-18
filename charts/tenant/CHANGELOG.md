@@ -18,6 +18,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - `keycloakGroup` — opt-in Keycloak group provisioning. When `keycloakGroup.enabled: true` and the `keycloak-operator` CRD (`keycloak.hostzero.com/v1beta1`) is present, renders a `KeycloakGroup` in the `auth` namespace nested under the configured `parentGroupRef` (default: `tenants`) in the configured realm (default: `infrastructure`). Group name is always the tenant name.
 
 ### Changed
+- Bumped `project` chart dependency from `2.1.*` to `2.2.*` to track the latest project chart minor release.
 - Remove waypoint dns network policy as this is globally, in the namespace, controlled by the `allow-kube-dns`policy
 
 ## [2.1.0] - 2026-05-29
