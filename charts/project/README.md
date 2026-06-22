@@ -1,6 +1,6 @@
 # project
 
-![Version: 2.1.3](https://img.shields.io/badge/Version-2.1.3-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.0.0](https://img.shields.io/badge/AppVersion-1.0.0-informational?style=flat-square)
+![Version: 2.2.0](https://img.shields.io/badge/Version-2.2.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.0.0](https://img.shields.io/badge/AppVersion-1.0.0-informational?style=flat-square)
 
 Deploys project infrastructure (Namespace, AppProject, app-of-apps Application, ResourceQuota, LimitRange, NetworkPolicy, Istio Waypoint) for a tenant project
 
@@ -77,6 +77,9 @@ Deploys project infrastructure (Namespace, AppProject, app-of-apps Application, 
 | auditlog.config.aggregatorAddress | string | `"vector-audit-aggregator.logging.svc.cluster.local:6000"` | Address of the Vector Aggregator. |
 | auditlog.config.sinkVersion | string | `"2"` | Vector sink protocol version. |
 | auditlog.schema | object | `{"action":{"required":true,"type":"string"},"actor":{"required":true,"type":"string"},"data":{"required":false,"type":"object"},"message":{"required":true,"type":"string"}}` | Validation schema. Each key is an audit event field. Supported field properties: type (string|object), required, enum, format (email|uuid), requiredKeys (object only). Override entirely in projectDefaults.auditlog.schema — no merging. |
+| kyvernoPolicyExceptions | object | See [values.yaml](values.yaml) | Optional. Kyverno PolicyException resources for this project. `PolicyException` resources (`policies.kyverno.io/v1alpha1`) support both `ValidatingPolicy` and legacy `ClusterPolicy` policyRefs, and are evaluated with CEL matchConditions. Exceptions are created in the Kyverno namespace. Resource names are automatically prefixed with the project namespace (`<tenant>-<project>`) to prevent naming collisions across projects. Set via `projectDefaults.kyvernoPolicyExceptions` in the tenant chart to share a base set across all projects, then override or extend per project. See https://kyverno.io/docs/guides/exceptions/ for details. |
+| kyvernoPolicyExceptions.enabled | bool | `false` | Optional. Enable or disable all PolicyException resources for this project. |
+| kyvernoPolicyExceptions.exceptions | object | {} | Optional. Map of PolicyException resources. Each key becomes the resource name. PolicyExceptions are created in the project namespace (`<tenant>-<project>`). Kyverno must be configured with `exceptionNamespace: "*"` to pick them up. Set `enabled: false` on an individual entry to skip it without removing it from the map. |
 | templates | object | See [values.yaml](values.yaml) | Optional. Values passed to the `templates` subchart for additional resources. Use `networkPolicies` and `ciliumNetworkPolicies` to add extra policies beyond the project defaults (e.g. cross-namespace connectivity). Set `enabled: false` to disable the subchart entirely. |
 | templates.enabled | bool | `true` | Optional. Enable or disable the `templates` subchart. When false, no additional resources are rendered and the named-template defines are unavailable. |
 | templates.networkPolicies | object | `{}` | Optional. Additional NetworkPolicy resources. Each key becomes the resource name. |

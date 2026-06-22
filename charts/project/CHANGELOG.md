@@ -11,6 +11,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Changed
 - `application.syncPolicy` (the `<project>-apps` app-of-apps) - now defaults to `selfHeal: false` with `syncOptions: [PruneLast=true]`, and declares `automated.enabled: true` explicitly. `selfHeal: false` is a deliberate break-glass: an operator can pause or override a child app in the UI without the app-of-apps reverting it. `PruneLast` removes leaf apps only after the rest of the sync succeeds. Declaring `automated.enabled` means turning auto-sync off in the UI shows as drift instead of being silently ignored. Requires ArgoCD 3.1+ for `automated.enabled`.
 - Project `Namespace` - added `argocd.argoproj.io/sync-options: Prune=false` so ArgoCD never prunes the namespace (its deletion would cascade to every workload and PVC inside), even when the `<project>-project` Application otherwise allows pruning. The existing `helm.sh/resource-policy: keep` only governs `helm uninstall`, not ArgoCD pruning.
+
+## [2.2.0] - 2026-06-18
+
+### Added
+- `kyvernoPolicyExceptions` values schema — documents the per-project `PolicyException` configuration consumed by the tenant chart. The project chart itself does not render PolicyException resources; they are rendered by the tenant chart so they can be created in the `kyverno` namespace.
+
+### Changed
+- `appProject.namespaceResourceBlacklist` — `policies.kyverno.io/PolicyException` and `kyverno.io/PolicyException` are now blacklisted by default, preventing tenants from creating or managing Kyverno policy exceptions directly in their project namespaces.
 - `appProject.namespaceResourceBlacklist` — `GrafanaInstance`, `GrafanaOrg`, and `GrafanaOrgDatasource` from `grafana-org-operator.kubitus-project.gitlab.io` are now blacklisted by default. Tenants can only deploy `GrafanaOrgDashboard` resources from the Grafana org operator into their project namespaces.
 - `appProject.namespaceResourceBlacklist` — all `keycloak.hostzero.com` resource kinds except `KeycloakClient` are now blacklisted by default. Tenants can only deploy `KeycloakClient` resources from the Keycloak operator into their project namespaces.
 - `auditlog.tenantName` value added — allows the tenant chart to inject the tenant name via `projectDefaults.auditlog.tenantName`, falling back to the top-level `tenantName` if not set.

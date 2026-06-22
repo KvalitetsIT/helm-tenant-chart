@@ -60,10 +60,8 @@ projectDefaults:
       # -- Required. Chart name within the repository.
       chart: project
       # -- Required. Chart version to deploy. Supports semver ranges.
-      targetRevision: "2.1.*"
-    # -- Optional. Sync policy for the `<project>-project` Applications: auto-sync + self-heal,
-    # with prune/cascade-delete gated behind manual UI confirmation. Declares `enabled` so a UI
-    # auto-sync toggle surfaces as drift (ArgoCD 3.1+).
+      targetRevision: "2.2.*"
+    # -- Optional. Sync policy applied to all project Applications.
     syncPolicy:
       automated:
         enabled: true
@@ -189,7 +187,7 @@ grafanaOrg:
     prometheus:
       name: Prometheus
       type: prometheus
-      url: http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090
+      url: http://prom-label-proxy.monitoring.svc.cluster.local:8080
       jsonData:
         tlsSkipVerify: true
         httpHeaderName1: X-Namespace
