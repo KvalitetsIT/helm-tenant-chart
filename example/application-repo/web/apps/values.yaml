@@ -1,9 +1,11 @@
 # Layer 3 - Leaf workloads, rendered by argocd-apps. One Application per workload.
 # Lowest blast radius, so be aggressive: prune + self-heal. Override syncPolicy per app.
 
-# Sync policy anchor.
+# Sync policy anchor. `automated.enabled` (ArgoCD 3.1+) is declared so a UI auto-sync
+# toggle shows as drift, not ignored.
 _syncPolicy: &syncPolicy
   automated:
+    enabled: true
     prune: true
     selfHeal: true
 
@@ -39,6 +41,7 @@ argocd-apps:
       syncPolicy:
         <<: *syncPolicy
         automated:
+          enabled: true
           prune: true
           selfHeal: false
       source:

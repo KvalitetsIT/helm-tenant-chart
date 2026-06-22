@@ -25,18 +25,21 @@ L0  Bootstrap - one Application per tenant
 
 ## Policy by layer
 
-| Layer | You set it in | prune | selfHeal | syncOptions |
-|-------|---------------|:-----:|:--------:|-------------|
-| **L0** Bootstrap | your argocd-apps values | yes | yes | `Prune=confirm`, `Delete=confirm` |
-| **L1** Provisioning | tenant-chart default | yes | yes | `Prune=confirm`, `Delete=confirm` |
-| **L2** App-of-apps | tenant-chart default | yes | no | `PruneLast=true` |
-| **L3** Leaf | your argocd-apps values | yes | yes | (none) |
-| **L4** Data | resource annotation | n/a | n/a | `Prune=false[,Delete=false]` |
+| Layer | You set it in | enabled | prune | selfHeal | syncOptions |
+|-------|---------------|:-------:|:-----:|:--------:|-------------|
+| **L0** Bootstrap | your argocd-apps values | yes | yes | yes | `Prune=confirm`, `Delete=confirm` |
+| **L1** Provisioning | tenant-chart default | yes | yes | yes | `Prune=confirm`, `Delete=confirm` |
+| **L2** App-of-apps | tenant-chart default | yes | yes | no | `PruneLast=true` |
+| **L3** Leaf | your argocd-apps values | yes | yes | yes | (none) |
+| **L4** Data | resource annotation | n/a | n/a | n/a | `Prune=false[,Delete=false]` |
 
 - **confirm** - prune and cascade-delete wait for an explicit click in the UI: nothing
   structural is deleted by accident, but intentional teardown still works.
 - **no selfHeal at L2** - the break-glass: an operator can pause or override a child app
   in the UI and the app-of-apps will not revert it.
+- **enabled** - `automated.enabled` is declared in git (not just `prune`/`selfHeal`) so that
+  turning auto-sync off on a child app in the UI shows as drift on the parent instead of being
+  silently ignored. Needs ArgoCD 3.1+.
 - L1 and L2 are tenant-chart defaults; you write only L0, L3 and L4.
 
 ## Files
@@ -49,11 +52,13 @@ The two folders mirror the two repos you keep - a **bootstrap repo** and a tenan
 ```yaml
 # Layer 0 - Bootstrap. One ArgoCD Application per tenant, rendered by argocd-apps.
 # Highest blast radius (a whole tenant): auto-sync, but every prune and cascade-delete
-# pauses for a manual confirmation in the UI. Needs ArgoCD 2.13+.
+# pauses for a manual confirmation in the UI.
 
-# Sync policy anchor.
+# Sync policy anchor. `automated.enabled` (ArgoCD 3.1+) is declared so a UI auto-sync
+# toggle shows as drift, not ignored.
 _syncPolicy: &syncPolicy
   automated:
+    enabled: true
     prune: true
     selfHeal: true
   syncOptions:
@@ -124,9 +129,11 @@ tenant:
 # Layer 3 - Leaf workloads, rendered by argocd-apps. One Application per workload.
 # Lowest blast radius, so be aggressive: prune + self-heal. Override syncPolicy per app.
 
-# Sync policy anchor.
+# Sync policy anchor. `automated.enabled` (ArgoCD 3.1+) is declared so a UI auto-sync
+# toggle shows as drift, not ignored.
 _syncPolicy: &syncPolicy
   automated:
+    enabled: true
     prune: true
     selfHeal: true
 
@@ -162,6 +169,7 @@ argocd-apps:
       syncPolicy:
         <<: *syncPolicy
         automated:
+          enabled: true
           prune: true
           selfHeal: false
       source:
@@ -199,4 +207,6 @@ out. See the full file for the accompanying `StatefulSet`.
 
 ## Requirements
 
-`Prune=confirm` / `Delete=confirm` require ArgoCD 2.13+.
+- `automated.enabled` (L0-L3) requires ArgoCD 3.1+. On older versions the field is dropped from
+  the live object, leaving a permanent OutOfSync - omit `enabled` if you must run < 3.1.
+- `Prune=confirm` / `Delete=confirm` (L0, L1) require ArgoCD 2.13+.

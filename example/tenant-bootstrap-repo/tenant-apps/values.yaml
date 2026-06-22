@@ -1,10 +1,12 @@
 # Layer 0 - Bootstrap. One ArgoCD Application per tenant, rendered by argocd-apps.
 # Highest blast radius (a whole tenant): auto-sync, but every prune and cascade-delete
-# pauses for a manual confirmation in the UI. Needs ArgoCD 2.13+.
+# pauses for a manual confirmation in the UI.
 
-# Sync policy anchor.
+# Sync policy anchor. `automated.enabled` (ArgoCD 3.1+) is declared so a UI auto-sync
+# toggle shows as drift, not ignored.
 _syncPolicy: &syncPolicy
   automated:
+    enabled: true
     prune: true
     selfHeal: true
   syncOptions:
