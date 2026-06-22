@@ -1,0 +1,40 @@
+# Layer 4 - Stateful data (tenant-owned; not enforced by the platform).
+# Pin data so ArgoCD never prunes or cascade-deletes it, while the workload around it
+# still prunes freely.
+#   Prune=false  - survives removal from git
+#   Delete=false - survives a cascade delete of the parent Application
+# Use both for volumes with no backup; Prune=false alone is enough for backed-up databases.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: web-database-data
+  annotations:
+    argocd.argoproj.io/sync-options: Prune=false,Delete=false
+spec:
+  accessModes: [ReadWriteOnce]
+  resources:
+    requests:
+      storage: 10Gi
+---
+# The workload keeps the aggressive Layer 3 policy - only the PVC opts out.
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: web-database
+spec:
+  serviceName: web-database
+  replicas: 1
+  selector:
+    matchLabels: {app: web-database}
+  template:
+    metadata:
+      labels: {app: web-database}
+    spec:
+      containers:
+        - name: db
+          image: postgres:16
+          volumeMounts:
+            - {name: data, mountPath: /var/lib/postgresql/data}
+      volumes:
+        - name: data
+          persistentVolumeClaim: {claimName: web-database-data}

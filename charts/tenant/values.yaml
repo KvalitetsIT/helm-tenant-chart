@@ -64,8 +64,12 @@ projectDefaults:
     # -- Optional. Sync policy applied to all project Applications.
     syncPolicy:
       automated:
+        enabled: true
         prune: true
         selfHeal: true
+      syncOptions:
+        - Prune=confirm
+        - Delete=confirm
 
   # -- Default config for `<project>-apps` Applications (app-of-apps).
   # Governed by the `<tenant>-apps` AppProject.

@@ -135,10 +135,16 @@ application:
       # @default -- See [values.yaml](values.yaml)
       valueFiles:
         - values.yaml
-  # -- Optional. Sync policy for the app-of-apps Application.
+  # -- Optional. Sync policy for the `<project>-apps` app-of-apps. `selfHeal: false` is a
+  # break-glass: operators override a child app in the UI without it reverting. Declares
+  # `enabled` so a UI auto-sync toggle surfaces as drift (ArgoCD 3.1+).
   syncPolicy:
     automated:
+      enabled: true
       prune: true
+      selfHeal: false
+    syncOptions:
+      - PruneLast=true
 
 resourceQuota:
   # -- Optional. Enable or disable the ResourceQuota resource.

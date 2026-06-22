@@ -1,0 +1,9 @@
+# Per-tenant wrapper: pulls in the shared `tenant` chart and supplies this tenant's
+# values. The Layer 0 Application points here. Values nest under `tenant:` (the dep name).
+apiVersion: v2
+name: tenant-a
+version: 1.0.0
+dependencies:
+  - name: tenant
+    version: "2.x"
+    repository: https://charts.example.com    # your chart repository

@@ -13,6 +13,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 - Changed `grafanaOrg.datasources.prometheus.url` default from `http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090` to `http://prom-label-proxy.monitoring.svc.cluster.local:8080` to reflect the new recommended cluster-local endpoint for tenant-isolated Prometheus access via the prom-label-proxy. Tenants using the old default must update their datasource URL to continue accessing Prometheus after upgrading.
+- `projectDefaults.projectApplication.syncPolicy` - added `syncOptions: [Prune=confirm, Delete=confirm]` and declared `automated.enabled: true` explicitly. The `<project>-project` Applications still auto-sync and self-heal, but pruning a project resource or cascade-deleting the Application now requires manual confirmation in the ArgoCD UI, so tenant/project structure is never destroyed by accident. Declaring `automated.enabled` means turning auto-sync off in the UI shows as drift instead of being silently ignored. Requires ArgoCD 3.1+ for `automated.enabled`; `Prune=confirm` / `Delete=confirm` require 2.14+.
 
 ## [2.2.0] - 2026-06-18
 

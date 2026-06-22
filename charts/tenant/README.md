@@ -44,7 +44,7 @@ A Helm chart for creating a new tenant in the Kithosting platform
 | projectDefaults.projectApplication.source.repoURL | string | `"https://raw.githubusercontent.com/KvalitetsIT/helm-repo/master/"` | Required. OCI/Helm repository URL for the project chart. |
 | projectDefaults.projectApplication.source.chart | string | `"project"` | Required. Chart name within the repository. |
 | projectDefaults.projectApplication.source.targetRevision | string | `"2.2.*"` | Required. Chart version to deploy. Supports semver ranges. |
-| projectDefaults.projectApplication.syncPolicy | object | `{"automated":{"prune":true,"selfHeal":true}}` | Optional. Sync policy applied to all project Applications. |
+| projectDefaults.projectApplication.syncPolicy | object | `{"automated":{"enabled":true,"prune":true,"selfHeal":true},"syncOptions":["Prune=confirm","Delete=confirm"]}` | Optional. Sync policy applied to all project Applications. |
 | projectDefaults.application | object | See [values.yaml](values.yaml) | Default config for `<project>-apps` Applications (app-of-apps). Governed by the `<tenant>-apps` AppProject. `source.path` cannot be set here — it must be provided per project. Per-project override: `projects.<name>.application`. |
 | projectDefaults.application.source.repoURL | string | `""` | Required. Default git repository URL for the app-of-apps. |
 | projectDefaults.application.source.targetRevision | string | `""` | Required. Default git branch, tag, or commit SHA. |

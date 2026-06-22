@@ -1,0 +1,52 @@
+# Layer 3 - Leaf workloads, rendered by argocd-apps. One Application per workload.
+# Lowest blast radius, so be aggressive: prune + self-heal. Override syncPolicy per app.
+
+# Sync policy anchor. `automated.enabled` (ArgoCD 3.1+) is declared so a UI auto-sync
+# toggle shows as drift, not ignored.
+_syncPolicy: &syncPolicy
+  automated:
+    enabled: true
+    prune: true
+    selfHeal: true
+
+# Application defaults anchor.
+_appDefaults: &appDefaults
+  namespace: tenant-a
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  project: tenant-a-web
+
+# App repository source anchor.
+_source: &source
+  repoURL: https://github.com/example-org/app-repo.git
+  targetRevision: main
+
+# In-cluster destination server anchor.
+_inClusterServer: &inClusterServer https://kubernetes.default.svc
+
+argocd-apps:
+  applications:
+    web-frontend:                      # stateless - base policy
+      <<: *appDefaults
+      syncPolicy: *syncPolicy
+      source:
+        <<: *source
+        path: web/frontend
+      destination:
+        namespace: tenant-a-web
+        server: *inClusterServer
+
+    web-database:                      # stateful - extend base, drop self-heal
+      <<: *appDefaults
+      syncPolicy:
+        <<: *syncPolicy
+        automated:
+          enabled: true
+          prune: true
+          selfHeal: false
+      source:
+        <<: *source
+        path: web/database
+      destination:
+        namespace: tenant-a-web
+        server: *inClusterServer

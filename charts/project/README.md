@@ -49,7 +49,7 @@ Deploys project infrastructure (Namespace, AppProject, app-of-apps Application, 
 | application.source.path | string | `""` | Required. Path to the app-of-apps directory. Injected by the tenant chart. |
 | application.source.targetRevision | string | `""` | Required. Git branch, tag, or commit SHA. Injected by the tenant chart. |
 | application.source.helm.valueFiles | list | See [values.yaml](values.yaml) | Optional. Helm value files passed to the app-of-apps Application. |
-| application.syncPolicy | object | `{"automated":{"prune":true}}` | Optional. Sync policy for the app-of-apps Application. |
+| application.syncPolicy | object | `{"automated":{"enabled":true,"prune":true,"selfHeal":false},"syncOptions":["PruneLast=true"]}` | Optional. Sync policy for the `<project>-apps` app-of-apps. `selfHeal: false` is a break-glass: operators override a child app in the UI without it reverting. Declares `enabled` so a UI auto-sync toggle surfaces as drift (ArgoCD 3.1+). |
 | resourceQuota.enabled | bool | `true` | Optional. Enable or disable the ResourceQuota resource. |
 | resourceQuota.spec | object | `{}` | Required when enabled. ResourceQuota hard limits. Set via `projectDefaults.resourceQuota.spec` in the tenant chart. See [Kubernetes ResourceQuota](https://kubernetes.io/docs/concepts/policy/resource-quotas/). |
 | limitRange.enabled | bool | `false` | Optional. Enable or disable the LimitRange resource. |
