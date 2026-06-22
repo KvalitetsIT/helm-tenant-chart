@@ -209,4 +209,4 @@ out. See the full file for the accompanying `StatefulSet`.
 
 - `automated.enabled` (L0-L3) requires ArgoCD 3.1+. On older versions the field is dropped from
   the live object, leaving a permanent OutOfSync - omit `enabled` if you must run < 3.1.
-- `Prune=confirm` / `Delete=confirm` (L0, L1) require ArgoCD 2.13+.
+- `Prune=confirm` / `Delete=confirm` (L0, L1) require ArgoCD 2.14+.
