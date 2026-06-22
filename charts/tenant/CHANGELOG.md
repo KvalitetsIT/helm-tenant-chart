@@ -8,6 +8,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+- Added `loki-group-mapping` configmap to the tenant chart, which can be consumed by `loki-scope-proxy` to map tenant namespaces to Loki groups for tenant-isolated log access. The configmap is rendered with a `groups` key containing a YAML mapping of tenant namespaces to Loki group names, derived from the `tenants` map in the chart values. This allows dynamic group mapping based on the defined tenants without hardcoding namespace-to-group mappings in the proxy configuration.
+
 ### Changed
 - Changed `grafanaOrg.datasources.prometheus.url` default from `http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090` to `http://prom-label-proxy.monitoring.svc.cluster.local:8080` to reflect the new recommended cluster-local endpoint for tenant-isolated Prometheus access via the prom-label-proxy. Tenants using the old default must update their datasource URL to continue accessing Prometheus after upgrading.
 
