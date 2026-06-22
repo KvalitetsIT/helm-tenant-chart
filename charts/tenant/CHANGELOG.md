@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [3.0.0] - 2026-06-22
+
 ### Added
 - Added `loki-group-mapping` configmap to the tenant chart, which can be consumed by `loki-scope-proxy` to map tenant namespaces to Loki groups for tenant-isolated log access. The configmap is rendered with a `groups` key containing a YAML mapping of tenant namespaces to Loki group names, derived from the `tenants` map in the chart values. This allows dynamic group mapping based on the defined tenants without hardcoding namespace-to-group mappings in the proxy configuration.
 

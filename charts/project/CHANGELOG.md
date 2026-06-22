@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [3.0.0] - 2026-06-22
+
 ### Changed
 - `application.syncPolicy` (the `<project>-apps` app-of-apps) - now defaults to `selfHeal: false` with `syncOptions: [PruneLast=true]`, and declares `automated.enabled: true` explicitly. `selfHeal: false` is a deliberate break-glass: an operator can pause or override a child app in the UI without the app-of-apps reverting it. `PruneLast` removes leaf apps only after the rest of the sync succeeds. Declaring `automated.enabled` means turning auto-sync off in the UI shows as drift instead of being silently ignored. Requires ArgoCD 3.1+ for `automated.enabled`.
 - Project `Namespace` - added `argocd.argoproj.io/sync-options: Prune=false` so ArgoCD never prunes the namespace (its deletion would cascade to every workload and PVC inside), even when the `<project>-project` Application otherwise allows pruning. The existing `helm.sh/resource-policy: keep` only governs `helm uninstall`, not ArgoCD pruning.
