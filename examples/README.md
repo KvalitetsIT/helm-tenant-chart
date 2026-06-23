@@ -29,17 +29,19 @@ L0  Bootstrap - one Application per tenant
 |-------|---------------|:-------:|:-----:|:--------:|-------------|
 | **L0** Bootstrap | your argocd-apps values | yes | yes | yes | `Prune=confirm`, `Delete=confirm` |
 | **L1** Provisioning | tenant-chart default | yes | yes | yes | `Prune=confirm`, `Delete=confirm` |
-| **L2** App-of-apps | tenant-chart default | yes | yes | no | `PruneLast=true` |
+| **L2** App-of-apps | tenant-chart default | no | n/a | n/a | `PruneLast=true` |
 | **L3** Leaf | your argocd-apps values | yes | yes | yes | (none) |
 | **L4** Data | resource annotation | n/a | n/a | n/a | `Prune=false[,Delete=false]` |
 
 - **confirm** - prune and cascade-delete wait for an explicit click in the UI: nothing
   structural is deleted by accident, but intentional teardown still works.
-- **no selfHeal at L2** - the break-glass: an operator can pause or override a child app
-  in the UI and the app-of-apps will not revert it.
+- **no auto-sync at L2** - the break-glass: with `automated.enabled: false` the app-of-apps
+  never auto-syncs, so an operator can pause or override a child app in the UI and a later
+  commit will not revert it. The trade-off is that adding, removing or changing child apps
+  needs a manual sync of the app-of-apps.
 - **enabled** - `automated.enabled` is declared in git (not just `prune`/`selfHeal`) so that
-  turning auto-sync off on a child app in the UI shows as drift on the parent instead of being
-  silently ignored. Needs ArgoCD 3.1+.
+  toggling auto-sync in the UI shows as drift on the parent instead of being silently ignored.
+  Needs ArgoCD 3.1+.
 - L1 and L2 are tenant-chart defaults; you write only L0, L3 and L4.
 
 ## Files
@@ -208,5 +210,7 @@ out. See the full file for the accompanying `StatefulSet`.
 ## Requirements
 
 - `automated.enabled` (L0-L3) requires ArgoCD 3.1+. On older versions the field is dropped from
-  the live object, leaving a permanent OutOfSync - omit `enabled` if you must run < 3.1.
+  the live object, leaving a permanent OutOfSync - omit `enabled` if you must run < 3.1. At L2,
+  where `enabled: false` is what turns auto-sync off, remove the whole `automated` block instead
+  on < 3.1 (omitting only `enabled` would leave auto-sync on).
 - `Prune=confirm` / `Delete=confirm` (L0, L1) require ArgoCD 2.14+.

@@ -1,6 +1,6 @@
 # project
 
-![Version: 3.0.0](https://img.shields.io/badge/Version-3.0.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.0.0](https://img.shields.io/badge/AppVersion-1.0.0-informational?style=flat-square)
+![Version: 3.0.1](https://img.shields.io/badge/Version-3.0.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.0.0](https://img.shields.io/badge/AppVersion-1.0.0-informational?style=flat-square)
 
 Deploys project infrastructure (Namespace, AppProject, app-of-apps Application, ResourceQuota, LimitRange, NetworkPolicy, Istio Waypoint) for a tenant project
 
@@ -49,7 +49,7 @@ Deploys project infrastructure (Namespace, AppProject, app-of-apps Application, 
 | application.source.path | string | `""` | Required. Path to the app-of-apps directory. Injected by the tenant chart. |
 | application.source.targetRevision | string | `""` | Required. Git branch, tag, or commit SHA. Injected by the tenant chart. |
 | application.source.helm.valueFiles | list | See [values.yaml](values.yaml) | Optional. Helm value files passed to the app-of-apps Application. |
-| application.syncPolicy | object | `{"automated":{"enabled":true,"prune":true,"selfHeal":false},"syncOptions":["PruneLast=true"]}` | Optional. Sync policy for the `<project>-apps` app-of-apps. `selfHeal: false` is a break-glass: operators override a child app in the UI without it reverting. Declares `enabled` so a UI auto-sync toggle surfaces as drift (ArgoCD 3.1+). |
+| application.syncPolicy | object | `{"automated":{"enabled":false},"syncOptions":["PruneLast=true"]}` | Optional. Sync policy for the `<project>-apps` app-of-apps. Auto-sync is off (`enabled: false`) so manual child-app overrides survive commits; sync the parent manually to roll out child-app changes. `enabled` is declared so a UI toggle shows as drift (ArgoCD 3.1+). |
 | resourceQuota.enabled | bool | `true` | Optional. Enable or disable the ResourceQuota resource. |
 | resourceQuota.spec | object | `{}` | Required when enabled. ResourceQuota hard limits. Set via `projectDefaults.resourceQuota.spec` in the tenant chart. See [Kubernetes ResourceQuota](https://kubernetes.io/docs/concepts/policy/resource-quotas/). |
 | limitRange.enabled | bool | `false` | Optional. Enable or disable the LimitRange resource. |

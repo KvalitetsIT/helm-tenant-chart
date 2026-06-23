@@ -135,14 +135,12 @@ application:
       # @default -- See [values.yaml](values.yaml)
       valueFiles:
         - values.yaml
-  # -- Optional. Sync policy for the `<project>-apps` app-of-apps. `selfHeal: false` is a
-  # break-glass: operators override a child app in the UI without it reverting. Declares
-  # `enabled` so a UI auto-sync toggle surfaces as drift (ArgoCD 3.1+).
+  # -- Optional. Sync policy for the `<project>-apps` app-of-apps. Auto-sync is off
+  # (`enabled: false`) so manual child-app overrides survive commits; sync the parent manually
+  # to roll out child-app changes. `enabled` is declared so a UI toggle shows as drift (ArgoCD 3.1+).
   syncPolicy:
     automated:
-      enabled: true
-      prune: true
-      selfHeal: false
+      enabled: false
     syncOptions:
       - PruneLast=true
 
