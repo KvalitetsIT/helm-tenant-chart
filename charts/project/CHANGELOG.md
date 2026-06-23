@@ -8,6 +8,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [3.0.1] - 2026-06-23
+
+### Changed
+- `application.syncPolicy` (the `<project>-apps` app-of-apps) - auto-sync now defaults to off (`automated.enabled: false`). The app-of-apps is a durable break-glass: an operator can override or pause a child app in the UI and a later commit to the apps repo will not auto-revert it. The trade-off is that adding, removing or changing child apps requires a manual sync of the app-of-apps. `automated.enabled` is still declared (not omitted) so toggling auto-sync in the UI shows as drift on the parent. Removed the now-inert `automated.prune` and `automated.selfHeal` fields (they only apply to automated syncs, which are off); `syncOptions: [PruneLast=true]` is kept and still orders prunes last on a manual sync. On ArgoCD < 3.1 remove the whole `automated` block instead, since omitting only `enabled` would leave auto-sync on.
+
 ## [3.0.0] - 2026-06-22
 
 ### Changed
