@@ -28,7 +28,7 @@ spec:
   realmRef:
     name: {{ .Values.keycloakGroup.realmRef }}
   parentGroupRef:
-    name: {{ $tenantName }}
+    name: {{ $tenantName }}-tenant-group
   definition:
     name: {{ $tenantName }}-viewer
 ---
@@ -43,7 +43,7 @@ spec:
   realmRef:
     name: {{ .Values.keycloakGroup.realmRef }}
   parentGroupRef:
-    name: {{ $tenantName }}
+    name: {{ $tenantName }}-tenant-group
   definition:
     name: {{ $tenantName }}-developer
 {{- end }}
