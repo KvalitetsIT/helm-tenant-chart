@@ -8,7 +8,7 @@ metadata:
     {{- include "tenant.labels" . | nindent 4 }}
 spec:
   grafanaInstanceRef: {{ .Values.grafanaOrg.grafanaInstanceRef }}
-  orgName: {{ default (include "tenant.name" . | title) .Values.grafanaOrg.orgName }}
+  orgName: {{ default (include "tenant.name" .) .Values.grafanaOrg.orgName }}
   {{- with .Values.grafanaOrg.orgMapping }}
   orgMapping:
     {{- tpl (toYaml .) $ | nindent 4 }}
