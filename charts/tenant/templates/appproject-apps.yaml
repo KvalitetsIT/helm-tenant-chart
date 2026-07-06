@@ -15,11 +15,11 @@ metadata:
 spec:
   description: {{ $tenantAppProjectName }} project
   sourceNamespaces:
-    - {{ $tenantName }}
+    - {{ include "tenant.adminNamespace" . }}
   sourceRepos:
     {{- include "tenant.applicationSourceRepos" . | nindent 4 }}
   destinations:
-    - namespace: {{ $tenantName }}
+    - namespace: {{ include "tenant.adminNamespace" . }}
       server: https://kubernetes.default.svc
   namespaceResourceWhitelist:
     - group: argoproj.io
