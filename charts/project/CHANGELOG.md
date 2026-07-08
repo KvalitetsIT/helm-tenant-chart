@@ -8,10 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
-## [3.0.2] - 2026-07-16
-
 ### Added
-- `appProject.clusterResourceWhitelist` — opt-in cluster-scoped resource access for per-project AppProjects. Empty by default (no cluster-scoped resources allowed). Configure via `projectDefaults.appProject.clusterResourceWhitelist` or per project via `projects.<name>.appProject.clusterResourceWhitelist`. Not controllable by tenants via the self-service ApplicationSet flow.
+- `namespace.name` — optional override for the project namespace name. Defaults to `<tenantName>-<projectName>` when unset, preserving existing behaviour. Use this to decouple the physical namespace from the default naming convention, e.g. set to `acme` instead of `acme-acme`. The value is validated against DNS-1123 label rules.
 
 ## [3.0.1] - 2026-06-23
 
