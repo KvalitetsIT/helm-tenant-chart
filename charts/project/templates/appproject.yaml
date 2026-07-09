@@ -29,6 +29,10 @@ spec:
   destinations:
     - namespace: {{ $projectNamespace }}
       server: https://kubernetes.default.svc
+  {{- with $spec.clusterResourceWhitelist }}
+  clusterResourceWhitelist:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
   {{- with $spec.namespaceResourceBlacklist }}
   namespaceResourceBlacklist:
     {{- toYaml . | nindent 4 }}

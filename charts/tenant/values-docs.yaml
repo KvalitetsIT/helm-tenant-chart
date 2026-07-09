@@ -30,6 +30,10 @@ projects:
       # without — as a workaround for ArgoCD's inconsistent OCI URL matching.
       # Overrides `projectDefaults.appProject.sourceRepos`.
       sourceRepos: []
+      # -- Optional. Cluster-scoped resource kinds allowed in the AppProject.
+      # Empty by default — only add entries when projects need to manage cluster-scoped resources.
+      # Overrides `projectDefaults.appProject.clusterResourceWhitelist`.
+      clusterResourceWhitelist: []
       # -- Optional. Kubernetes resource kinds allowed in the project namespace.
       # Wildcard allows all — tighten per project as needed.
       # Overrides `projectDefaults.appProject.namespaceResourceWhitelist`.

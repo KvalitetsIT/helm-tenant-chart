@@ -29,6 +29,9 @@ appProject:
   # without — as a workaround for ArgoCD's inconsistent OCI URL matching against `sourceRepos`.
   # Override or extend per project via `projects.<name>.appProject.sourceRepos` in the tenant chart.
   sourceRepos: []
+  # -- Optional. Cluster-scoped resource kinds allowed in the AppProject.
+  # Empty by default — only add entries when projects need to manage cluster-scoped resources.
+  clusterResourceWhitelist: []
   # -- Optional. Kubernetes resource kinds allowed in the project namespace.
   # Wildcard allows all — tighten per project as needed.
   namespaceResourceWhitelist:
