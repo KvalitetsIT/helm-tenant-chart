@@ -42,6 +42,14 @@
 {{- end -}}
 {{- end -}}
 
+{{/* Fail if a resolved project namespace collides with the tenant admin namespace.
+     Call with: (dict "projectName" $name "projectNs" $projNs "adminNs" $adminNs) */}}
+{{- define "tenant.validateNoNamespaceConflict" -}}
+{{- if eq .projectNs .adminNs -}}
+  {{- fail (printf "project %q: resolved namespace %q conflicts with the tenant admin namespace — use a different namespace.name" .projectName .projectNs) -}}
+{{- end -}}
+{{- end -}}
+
 {{/* Chart name + version label value */}}
 {{- define "tenant.chart" -}}
 {{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" -}}

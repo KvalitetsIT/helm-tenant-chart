@@ -25,7 +25,9 @@ spec:
       server: https://kubernetes.default.svc
   {{- else }}
   {{- range $name, $project := .Values.projects }}
-    - namespace: {{ include "tenant.projectNamespace" (list (include "tenant.name" $) $name (($project.namespace).name)) }}
+  {{- $projNs := include "tenant.projectNamespace" (list (include "tenant.name" $) $name (($project.namespace).name)) }}
+  {{- include "tenant.validateNoNamespaceConflict" (dict "projectName" $name "projectNs" $projNs "adminNs" (include "tenant.adminNamespace" $)) }}
+    - namespace: {{ $projNs }}
       server: https://kubernetes.default.svc
   {{- end }}
   {{- end }}

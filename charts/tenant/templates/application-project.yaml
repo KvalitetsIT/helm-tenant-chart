@@ -3,6 +3,8 @@
 {{- range $name, $project := .Values.projects }}
 {{- $tenantName := include "tenant.name" $ }}
 {{- $p := fromYaml (include "tenant.merge" (dict "defaults" $.Values.projectDefaults "override" $project)) }}
+{{- $projNs := include "tenant.projectNamespace" (list $tenantName $name (($p.namespace).name)) }}
+{{- include "tenant.validateNoNamespaceConflict" (dict "projectName" $name "projectNs" $projNs "adminNs" (include "tenant.adminNamespace" $)) }}
 ---
 apiVersion: argoproj.io/v1alpha1
 kind: Application
@@ -25,7 +27,7 @@ spec:
       valuesObject:
         {{- include "tenant.buildValuesObject" (dict "root" $ "name" $name "p" $p) | nindent 8 }}
   destination:
-    namespace: {{ include "tenant.projectNamespace" (list $tenantName $name (($p.namespace).name)) }}
+    namespace: {{ $projNs }}
     server: https://kubernetes.default.svc
   {{- with $p.projectApplication.syncPolicy }}
   syncPolicy:
