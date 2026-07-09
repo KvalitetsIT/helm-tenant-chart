@@ -104,6 +104,7 @@ app.kubernetes.io/instance: {{ .Release.Name }}
   "projectName" $name
   "tenantAppProjectName" (include "tenant.tenantAppProjectName" $root)
   "argoNamespace" $root.Values.argoNamespace
+  "adminNamespace" (include "tenant.adminNamespace" $root)
 ) -}}
 {{- if or $root.Values.roleGroups $p.appProject -}}
   {{- $roleGroupOverrides := dict -}}

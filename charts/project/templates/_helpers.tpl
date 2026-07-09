@@ -18,6 +18,9 @@
 {{- define "project.projectNamespace" -}}
 {{- if .Values.namespace.name -}}
   {{- include "project.validateDNS1123Label" (list .Values.namespace.name "namespace.name") -}}
+  {{- if and .Values.adminNamespace (eq .Values.namespace.name .Values.adminNamespace) -}}
+    {{- fail (printf "namespace.name %q conflicts with the tenant admin namespace - choose a different name" .Values.namespace.name) -}}
+  {{- end -}}
   {{- .Values.namespace.name -}}
 {{- else -}}
   {{- include "project.validateDNS1123Label" (list .Values.tenantName "tenantName") -}}

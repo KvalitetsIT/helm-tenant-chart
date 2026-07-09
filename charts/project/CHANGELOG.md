@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 - `namespace.name` — optional override for the project namespace name. Defaults to `<tenantName>-<projectName>` when unset, preserving existing behaviour. Use this to decouple the physical namespace from the default naming convention, e.g. set to `acme` instead of `acme-acme`. The value is validated against DNS-1123 label rules.
+- `adminNamespace` — injected by the tenant chart. When set, `namespace.name` is validated against it at render time to prevent a project namespace from colliding with the tenant admin namespace. This catches conflicts for ApplicationSet-managed projects at ArgoCD sync time.
 
 ## [3.0.1] - 2026-06-23
 

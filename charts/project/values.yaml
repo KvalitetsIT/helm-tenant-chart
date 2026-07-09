@@ -10,6 +10,10 @@ tenantAppProjectName: ""
 # -- Injected by the tenant chart. Namespace where ArgoCD is installed.
 # @default -- argocd
 argoNamespace: argocd
+# -- Injected by the tenant chart. The tenant admin namespace - used to guard against
+# a project namespace.name colliding with the admin namespace at sync time.
+# @default -- ""
+adminNamespace: ""
 
 namespace:
   # -- Optional. Override the project namespace name. Defaults to <tenantName>-<projectName>.
