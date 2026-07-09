@@ -31,6 +31,7 @@ Deploys project infrastructure (Namespace, AppProject, app-of-apps Application, 
 | projectName | string | "" | Injected by the tenant chart. Name of the project. |
 | tenantAppProjectName | string | "" | Injected by the tenant chart. Name of the tenant AppProject. |
 | argoNamespace | string | argocd | Injected by the tenant chart. Namespace where ArgoCD is installed. |
+| namespace.name | string | `""` | Optional. Override the project namespace name. Defaults to <tenantName>-<projectName>. Use this to decouple the physical namespace from the default naming convention, e.g. set to "acme" instead of "acme-acme". |
 | namespace.labels | object | `{}` | Optional. Additional labels for the project Namespace. |
 | namespace.annotations | object | `{}` | Optional. Additional annotations for the project Namespace. |
 | appProject | object | See [values.yaml](values.yaml) | Configuration for the per-project AppProject (`<tenant>-<project>`). Supports `{tenant}` and `{project}` placeholder substitution in descriptions, groups, and policies. Override per project via `projects.<name>.appProject` in the tenant chart. |

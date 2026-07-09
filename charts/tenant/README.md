@@ -30,6 +30,7 @@ A Helm chart for creating a new tenant in the Kithosting platform
 | nameOverride | string | `""` | Optional. Name override for the tenant. |
 | argoNamespace | string | `"argocd"` | Optional. Namespace where ArgoCD is installed. AppProject resources must live in the ArgoCD root namespace. |
 | roleGroups | object | `{}` | Optional. Map of role name → AD/OIDC group list applied globally to all AppProjects. Acts as the lowest-precedence default — per-project `appProject.roles.<name>.groups` always wins. |
+| tenantNamespace.name | string | `""` | Optional. Override the tenant namespace name. Defaults to the tenant name. Use this to decouple the physical namespace from the tenant identity, e.g. set to "acme-admin" while keeping the tenant name "acme". |
 | tenantNamespace.labels | object | `{}` | Optional. Additional labels for the tenant namespace. |
 | tenantNamespace.annotations | object | `{}` | Optional. Additional annotations for the tenant namespace. |
 | applicationSet | object | See [values.yaml](values.yaml) | Opt-in self-service projects: discover them from a tenant-owned git repo via an ApplicationSet instead of the `projects` loop. Tenants may only set the `application` block (an unauthorized source.repoURL is rejected by the `<tenant>-apps` AppProject); admin `projects.<name>` entries win. |
