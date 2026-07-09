@@ -7,7 +7,7 @@ apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
   name: {{ $tenantName }}-projects
-  namespace: {{ include "tenant.adminNamespace" . }}
+  namespace: {{ include "tenant.tenantNamespace" . }}
   labels:
     {{- include "tenant.labels" . | nindent 4 }}
   annotations:
@@ -44,7 +44,7 @@ spec:
   template:
     metadata:
       name: '{{ `{{ .name }}` }}-project'
-      namespace: {{ include "tenant.adminNamespace" . }}
+      namespace: {{ include "tenant.tenantNamespace" . }}
       labels:
         {{- include "tenant.labels" . | nindent 8 }}
       annotations:

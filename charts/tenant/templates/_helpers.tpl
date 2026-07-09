@@ -15,8 +15,8 @@
 {{- $name -}}
 {{- end -}}
 
-{{/* Tenant admin namespace — defaults to tenant name, overrideable via tenantNamespace.name */}}
-{{- define "tenant.adminNamespace" -}}
+{{/* Tenant namespace — defaults to tenant name, overrideable via tenantNamespace.name */}}
+{{- define "tenant.tenantNamespace" -}}
 {{- $ns := default (include "tenant.name" .) .Values.tenantNamespace.name -}}
 {{- include "tenant.validateDNS1123Label" (list $ns "tenantNamespace.name") -}}
 {{- $ns -}}
@@ -46,7 +46,7 @@
      Call with: (dict "projectName" $name "projectNs" $projNs "adminNs" $adminNs) */}}
 {{- define "tenant.validateNoNamespaceConflict" -}}
 {{- if eq .projectNs .adminNs -}}
-  {{- fail (printf "project %q: resolved namespace %q conflicts with the tenant admin namespace — use a different namespace.name" .projectName .projectNs) -}}
+  {{- fail (printf "project %q: resolved namespace %q conflicts with the tenant admin namespace - use a different namespace.name" .projectName .projectNs) -}}
 {{- end -}}
 {{- end -}}
 
@@ -104,7 +104,7 @@ app.kubernetes.io/instance: {{ .Release.Name }}
   "projectName" $name
   "tenantAppProjectName" (include "tenant.tenantAppProjectName" $root)
   "argoNamespace" $root.Values.argoNamespace
-  "adminNamespace" (include "tenant.adminNamespace" $root)
+  "tenantNamespace" (include "tenant.tenantNamespace" $root)
 ) -}}
 {{- if or $root.Values.roleGroups $p.appProject -}}
   {{- $roleGroupOverrides := dict -}}

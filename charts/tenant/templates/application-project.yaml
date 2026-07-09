@@ -4,13 +4,13 @@
 {{- $tenantName := include "tenant.name" $ }}
 {{- $p := fromYaml (include "tenant.merge" (dict "defaults" $.Values.projectDefaults "override" $project)) }}
 {{- $projNs := include "tenant.projectNamespace" (list $tenantName $name (($p.namespace).name)) }}
-{{- include "tenant.validateNoNamespaceConflict" (dict "projectName" $name "projectNs" $projNs "adminNs" (include "tenant.adminNamespace" $)) }}
+{{- include "tenant.validateNoNamespaceConflict" (dict "projectName" $name "projectNs" $projNs "adminNs" (include "tenant.tenantNamespace" $)) }}
 ---
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
   name: {{ $name }}-project
-  namespace: {{ include "tenant.adminNamespace" $ }}
+  namespace: {{ include "tenant.tenantNamespace" $ }}
   labels:
     {{- include "tenant.labels" $ | nindent 4 }}
   annotations:

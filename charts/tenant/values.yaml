@@ -12,6 +12,9 @@ tenantNamespace:
   # -- Optional. Override the tenant namespace name. Defaults to the tenant name.
   # Use this to decouple the physical namespace from the tenant identity,
   # e.g. set to "acme-admin" while keeping the tenant name "acme".
+  # Note: `projects.<name>.namespace.name` overrides are not supported when
+  # `applicationSet.enabled: true` — the ApplicationSet destination is always
+  # `<tenant>-<project>` and cannot enumerate per-project overrides at template time.
   name: ""
   # -- Optional. Additional labels for the tenant namespace.
   labels: {}

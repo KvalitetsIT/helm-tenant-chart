@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: {{ include "tenant.adminNamespace" . }}
+  name: {{ include "tenant.tenantNamespace" . }}
   labels:
     {{- include "tenant.labels" . | nindent 4 }}
     tenant.kitkube.dk/name: {{ include "tenant.name" . }}

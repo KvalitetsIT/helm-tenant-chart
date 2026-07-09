@@ -16,7 +16,7 @@ metadata:
 spec:
   description: {{ $projectNamespace }} project
   sourceNamespaces:
-    - {{ .Values.tenantName }}
+    - {{ default .Values.tenantName .Values.tenantNamespace }}
   sourceRepos:
     - {{ required "application.source.repoURL is required" .Values.application.source.repoURL | quote }}
     - "https://raw.githubusercontent.com/KvalitetsIT/helm-repo/master/"

@@ -5,7 +5,7 @@ apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
   name: {{ .Values.projectName }}-apps
-  namespace: {{ .Values.tenantName }}
+  namespace: {{ default .Values.tenantName .Values.tenantNamespace }}
   labels:
     {{- include "project.labels" . | nindent 4 }}
   annotations:
@@ -23,7 +23,7 @@ spec:
       {{- toYaml . | nindent 6 }}
     {{- end }}
   destination:
-    namespace: {{ .Values.tenantName }}
+    namespace: {{ default .Values.tenantName .Values.tenantNamespace }}
     server: https://kubernetes.default.svc
   {{- with $app.syncPolicy }}
   syncPolicy:
