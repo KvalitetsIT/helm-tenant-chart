@@ -8,6 +8,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Fixed
+- Changed sync-wave of ApplicationSet to run before the project Application to make the ApplicationSet take over the Application instead of recreating.
+
 ### Added
 - `tenantNamespace.name` — optional override for the tenant admin namespace name. Defaults to the tenant name when unset, preserving existing behaviour. Use this to decouple the physical namespace from the tenant identity, e.g. set to `acme-admin` while keeping the tenant name `acme`. All AppProject `sourceNamespaces`, `destinations`, and admin Application `namespace` fields follow this value via the new `tenant.tenantNamespace` helper.
 - `projects.<name>.namespace.name` — optional override for a project's namespace name. Defaults to `<tenant>-<project>` when unset. Use this to give a project a namespace that does not follow the default convention, e.g. `acme` instead of `acme-acme`. The resolved name is used for the AppProject destination and the Application destination, and is forwarded to the project chart.
