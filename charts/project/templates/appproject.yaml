@@ -1,5 +1,6 @@
 {{- if and .Values.tenantName .Values.projectName }}
 {{- $projectNamespace := include "project.projectNamespace" . }}
+{{- $tenantNamespace := default .Values.tenantName .Values.tenantNamespace }}
 {{- $spec := .Values.appProject }}
 ---
 apiVersion: argoproj.io/v1alpha1
@@ -16,7 +17,7 @@ metadata:
 spec:
   description: {{ $projectNamespace }} project
   sourceNamespaces:
-    - {{ .Values.tenantName }}
+    - {{ $tenantNamespace }}
   sourceRepos:
     - {{ required "application.source.repoURL is required" .Values.application.source.repoURL | quote }}
     - "https://raw.githubusercontent.com/KvalitetsIT/helm-repo/master/"
@@ -51,7 +52,7 @@ spec:
       {{- end }}
       policies:
       {{- range $roleDef.policies }}
-        {{- $parsed := . | replace "{tenant}" $.Values.tenantName | replace "{project}" $projectNamespace }}
+        {{- $parsed := . | replace "{tenant}" $.Values.tenantName | replace "{tenantNamespace}" $tenantNamespace | replace "{project}" $projectNamespace }}
         - "p, proj:{{ $projectNamespace }}:{{ $roleName }}, {{ $parsed }}"
       {{- end }}
   {{- end }}

@@ -15,17 +15,39 @@
 {{- $name -}}
 {{- end -}}
 
-{{/* Project namespace: <tenant>-<project> validated against DNS-1123 + 63-char limit.
-     Call with a list: (list $tenantName $projectName) */}}
+{{/* Tenant namespace — defaults to tenant name, overrideable via tenantNamespace.name */}}
+{{- define "tenant.tenantNamespace" -}}
+{{- $ns := default (include "tenant.name" .) .Values.tenantNamespace.name -}}
+{{- include "tenant.validateDNS1123Label" (list $ns "tenantNamespace.name") -}}
+{{- $ns -}}
+{{- end -}}
+
+{{/* Project namespace: defaults to <tenant>-<project>, overrideable via an optional third element.
+     Call with a list: (list $tenantName $projectName)
+                    or (list $tenantName $projectName $namespaceOverride) */}}
 {{- define "tenant.projectNamespace" -}}
 {{- $tenantName := index . 0 -}}
 {{- $projectName := index . 1 -}}
-{{- include "tenant.validateDNS1123Label" (list $projectName "project key") -}}
-{{- $ns := printf "%s-%s" $tenantName $projectName -}}
-{{- if gt (len $ns) 63 -}}
-  {{- fail (printf "combined namespace %q exceeds the 63-character DNS-1123 limit (%d chars)" $ns (len $ns)) -}}
+{{- $override := index . 2 | default "" -}}
+{{- if $override -}}
+  {{- include "tenant.validateDNS1123Label" (list $override "namespace.name") -}}
+  {{- $override -}}
+{{- else -}}
+  {{- include "tenant.validateDNS1123Label" (list $projectName "project key") -}}
+  {{- $ns := printf "%s-%s" $tenantName $projectName -}}
+  {{- if gt (len $ns) 63 -}}
+    {{- fail (printf "combined namespace %q exceeds the 63-character DNS-1123 limit (%d chars)" $ns (len $ns)) -}}
+  {{- end -}}
+  {{- $ns -}}
 {{- end -}}
-{{- $ns -}}
+{{- end -}}
+
+{{/* Fail if a resolved project namespace collides with the tenant admin namespace.
+     Call with: (dict "projectName" $name "projectNs" $projNs "adminNs" $adminNs) */}}
+{{- define "tenant.validateNoNamespaceConflict" -}}
+{{- if eq .projectNs .adminNs -}}
+  {{- fail (printf "project %q: resolved namespace %q conflicts with the tenant admin namespace - use a different namespace.name" .projectName .projectNs) -}}
+{{- end -}}
 {{- end -}}
 
 {{/* Chart name + version label value */}}
@@ -82,6 +104,7 @@ app.kubernetes.io/instance: {{ .Release.Name }}
   "projectName" $name
   "tenantAppProjectName" (include "tenant.tenantAppProjectName" $root)
   "argoNamespace" $root.Values.argoNamespace
+  "tenantNamespace" (include "tenant.tenantNamespace" $root)
 ) -}}
 {{- if or $root.Values.roleGroups $p.appProject -}}
   {{- $roleGroupOverrides := dict -}}

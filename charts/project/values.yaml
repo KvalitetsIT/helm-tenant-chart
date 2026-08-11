@@ -12,13 +12,17 @@ tenantAppProjectName: ""
 argoNamespace: argocd
 
 namespace:
+  # -- Optional. Override the project namespace name. Defaults to <tenantName>-<projectName>.
+  # Use this to decouple the physical namespace from the default naming convention,
+  # e.g. set to "acme" instead of "acme-acme".
+  name: ""
   # -- Optional. Additional labels for the project Namespace.
   labels: {}
   # -- Optional. Additional annotations for the project Namespace.
   annotations: {}
 
 # -- Configuration for the per-project AppProject (`<tenant>-<project>`).
-# Supports `{tenant}` and `{project}` placeholder substitution in descriptions, groups, and policies.
+# Supports `{tenant}`, `{tenantNamespace}`, and `{project}` placeholder substitution in descriptions, groups, and policies.
 # Override per project via `projects.<name>.appProject` in the tenant chart.
 # @default -- See [values.yaml](values.yaml)
 appProject:
@@ -90,7 +94,11 @@ appProject:
     - group: kyverno.io
       kind: PolicyException
   # -- Optional. RBAC roles for the AppProject.
-  # Supports `{tenant}` and `{project}` placeholder substitution.
+  # Supports `{tenant}`, `{tenantNamespace}`, and `{project}` placeholder substitution.
+  # `{tenant}` is the tenant identity (use in descriptions and group names).
+  # `{tenantNamespace}` is the namespace Applications actually live in - use it for the
+  # namespace segment of policy strings, since it can differ from `{tenant}` when
+  # `tenantNamespace.name` is overridden.
   # Override or extend per project via `projects.<name>.appProject.roles` in the tenant chart.
   # @default -- See [values.yaml](values.yaml)
   roles:
@@ -102,7 +110,7 @@ appProject:
         - "{tenant}-viewer"
       # -- Optional. ArgoCD RBAC policy strings for the viewer role.
       policies:
-        - "applications, get, {project}/{tenant}/*, allow"
+        - "applications, get, {project}/{tenantNamespace}/*, allow"
         - "logs, get, {project}/*, allow"
     # -- Optional. Developer role — grants full sync and action access to project workloads.
     developer:
@@ -112,14 +120,14 @@ appProject:
         - "{tenant}-developer"
       # -- Optional. ArgoCD RBAC policy strings for the developer role.
       policies:
-        - "applications, get, {project}/{tenant}/*, allow"
+        - "applications, get, {project}/{tenantNamespace}/*, allow"
         - "logs, get, {project}/*, allow"
-        - "applications, update, {project}/{tenant}/*, allow"
-        - "applications, update/*, {project}/{tenant}/*, allow"
-        - "applications, delete, {project}/{tenant}/*, allow"
-        - "applications, delete/*, {project}/{tenant}/*, allow"
-        - "applications, sync, {project}/{tenant}/*, allow"
-        - "applications, action/*, {project}/{tenant}/*, allow"
+        - "applications, update, {project}/{tenantNamespace}/*, allow"
+        - "applications, update/*, {project}/{tenantNamespace}/*, allow"
+        - "applications, delete, {project}/{tenantNamespace}/*, allow"
+        - "applications, delete/*, {project}/{tenantNamespace}/*, allow"
+        - "applications, sync, {project}/{tenantNamespace}/*, allow"
+        - "applications, action/*, {project}/{tenantNamespace}/*, allow"
 
 # -- Configuration for the app-of-apps Application (`<project>-apps`).
 # `source.repoURL`, `source.path`, and `source.targetRevision` are injected by the tenant chart.

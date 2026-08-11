@@ -13,16 +13,24 @@
 {{- end -}}
 {{- end -}}
 
-{{/* Project namespace: <tenant>-<project> (e.g. acme-inventory).
-     Validates both segments and the combined length against DNS-1123 label rules. */}}
+{{/* Project namespace: defaults to <tenant>-<project>, overrideable via namespace.name.
+     Validates the result against DNS-1123 label rules. */}}
 {{- define "project.projectNamespace" -}}
-{{- include "project.validateDNS1123Label" (list .Values.tenantName "tenantName") -}}
-{{- include "project.validateDNS1123Label" (list .Values.projectName "projectName") -}}
-{{- $ns := printf "%s-%s" .Values.tenantName .Values.projectName -}}
-{{- if gt (len $ns) 63 -}}
-  {{- fail (printf "combined namespace %q exceeds the 63-character DNS-1123 limit (%d chars)" $ns (len $ns)) -}}
+{{- if .Values.namespace.name -}}
+  {{- include "project.validateDNS1123Label" (list .Values.namespace.name "namespace.name") -}}
+  {{- if and .Values.tenantNamespace (eq .Values.namespace.name .Values.tenantNamespace) -}}
+    {{- fail (printf "namespace.name %q conflicts with the tenant admin namespace - choose a different name" .Values.namespace.name) -}}
+  {{- end -}}
+  {{- .Values.namespace.name -}}
+{{- else -}}
+  {{- include "project.validateDNS1123Label" (list .Values.tenantName "tenantName") -}}
+  {{- include "project.validateDNS1123Label" (list .Values.projectName "projectName") -}}
+  {{- $ns := printf "%s-%s" .Values.tenantName .Values.projectName -}}
+  {{- if gt (len $ns) 63 -}}
+    {{- fail (printf "combined namespace %q exceeds the 63-character DNS-1123 limit (%d chars)" $ns (len $ns)) -}}
+  {{- end -}}
+  {{- $ns -}}
 {{- end -}}
-{{- $ns -}}
 {{- end -}}
 
 {{/* Return the given resource value map (deep-copied) with metadata.namespace

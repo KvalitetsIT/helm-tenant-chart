@@ -1,4 +1,5 @@
 {{- $tenantName := include "tenant.name" . }}
+{{- $tenantNs := include "tenant.tenantNamespace" . }}
 {{- $projectAppProjectName := include "tenant.projectAppProjectName" . }}
 {{- $argoNamespace := .Values.argoNamespace }}
 ---
@@ -16,7 +17,7 @@ metadata:
 spec:
   description: {{ $projectAppProjectName }} project
   sourceNamespaces:
-    - {{ $tenantName }}
+    - {{ $tenantNs }}
   sourceRepos:
     {{- include "tenant.projectSourceRepos" . | nindent 4 }}
   destinations:
@@ -25,13 +26,16 @@ spec:
       server: https://kubernetes.default.svc
   {{- else }}
   {{- range $name, $project := .Values.projects }}
-    - namespace: {{ include "tenant.projectNamespace" (list (include "tenant.name" $) $name) }}
+  {{- $p := fromYaml (include "tenant.merge" (dict "defaults" $.Values.projectDefaults "override" $project)) }}
+  {{- $projNs := include "tenant.projectNamespace" (list (include "tenant.name" $) $name (($p.namespace).name)) }}
+  {{- include "tenant.validateNoNamespaceConflict" (dict "projectName" $name "projectNs" $projNs "adminNs" $tenantNs) }}
+    - namespace: {{ $projNs }}
       server: https://kubernetes.default.svc
   {{- end }}
   {{- end }}
     - namespace: {{ $argoNamespace }}
       server: https://kubernetes.default.svc
-    - namespace: {{ $tenantName }}
+    - namespace: {{ $tenantNs }}
       server: https://kubernetes.default.svc
   clusterResourceWhitelist:
     - group: ""
@@ -47,7 +51,7 @@ spec:
         - {{ . | quote }}
       {{- end }}
       policies:
-        - "p, proj:{{ $projectAppProjectName }}:viewer, applications, get, {{ $projectAppProjectName }}/{{ $tenantName }}/*, allow"
+        - "p, proj:{{ $projectAppProjectName }}:viewer, applications, get, {{ $projectAppProjectName }}/{{ $tenantNs }}/*, allow"
     - name: developer
       description: "Can sync {{ $tenantName }} project Applications"
       groups:
@@ -55,5 +59,5 @@ spec:
         - {{ . | quote }}
       {{- end }}
       policies:
-        - "p, proj:{{ $projectAppProjectName }}:developer, applications, get, {{ $projectAppProjectName }}/{{ $tenantName }}/*, allow"
-        - "p, proj:{{ $projectAppProjectName }}:developer, applications, sync, {{ $projectAppProjectName }}/{{ $tenantName }}/*, allow"
+        - "p, proj:{{ $projectAppProjectName }}:developer, applications, get, {{ $projectAppProjectName }}/{{ $tenantNs }}/*, allow"
+        - "p, proj:{{ $projectAppProjectName }}:developer, applications, sync, {{ $projectAppProjectName }}/{{ $tenantNs }}/*, allow"
