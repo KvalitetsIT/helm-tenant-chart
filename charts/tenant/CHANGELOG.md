@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [3.1.0] - 2026-08-12
+
 ### Fixed
 - Changed sync-wave of ApplicationSet to run before the project Application to make the ApplicationSet take over the Application instead of recreating.
 
