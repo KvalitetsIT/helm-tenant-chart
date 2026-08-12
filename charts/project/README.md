@@ -31,6 +31,11 @@ Deploys project infrastructure (Namespace, AppProject, app-of-apps Application, 
 | projectName | string | "" | Injected by the tenant chart. Name of the project. |
 | tenantAppProjectName | string | "" | Injected by the tenant chart. Name of the tenant AppProject. |
 | argoNamespace | string | argocd | Injected by the tenant chart. Namespace where ArgoCD is installed. |
+| global | object | See [values.yaml](values.yaml) | Injected by the tenant chart per project. Helm globals shared with the `templates` subchart, so `templates.*` resources can reference identity and namespaces via tpl, e.g. `{{ .Values.global.tenantNamespace }}`. Set manually only for a standalone install. |
+| global.tenantName | string | "" | Name of the tenant. |
+| global.tenantNamespace | string | "" | Tenant namespace (where the tenant's project Applications live). |
+| global.projectName | string | "" | Name of the project. |
+| global.projectNamespace | string | "" | Project namespace (where this project's workloads live). |
 | namespace.name | string | `""` | Optional. Override the project namespace name. Defaults to <tenantName>-<projectName>. Use this to decouple the physical namespace from the default naming convention, e.g. set to "acme" instead of "acme-acme". |
 | namespace.labels | object | `{}` | Optional. Additional labels for the project Namespace. |
 | namespace.annotations | object | `{}` | Optional. Additional annotations for the project Namespace. |
