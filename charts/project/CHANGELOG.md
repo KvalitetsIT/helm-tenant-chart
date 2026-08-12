@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [3.1.0] - 2026-08-12
+
 ### Added
 - `global.*` values (`tenantName`, `tenantNamespace`, `projectName`, `projectNamespace`): documented Helm globals injected by the tenant chart per project and shared with the `templates` subchart, so `templates.*` resources can reference tenant/project identity and namespaces via `tpl` (e.g. `{{ .Values.global.tenantNamespace }}`). No effect on the project chart's own resources; set manually only for a standalone install.
 - `namespace.name` — optional override for the project namespace name. Defaults to `<tenantName>-<projectName>` when unset, preserving existing behaviour. Use this to decouple the physical namespace from the default naming convention, e.g. set to `acme` instead of `acme-acme`. The value is validated against DNS-1123 label rules.

@@ -2,7 +2,7 @@ apiVersion: v2
 name: tenant
 description: A Helm chart for creating a new tenant in the Kithosting platform
 type: application
-version: 3.0.2
+version: 3.1.0
 appVersion: 1.0.0
 home: https://github.com/KvalitetsIT
 icon: https://raw.githubusercontent.com/KvalitetsIT/.github/refs/heads/main/assets/favicon.png
