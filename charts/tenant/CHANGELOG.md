@@ -8,6 +8,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Fixed
+- `loki-group-mapping` ConfigMap was always created in a namespace named after the tenant, ignoring the `tenantNamespace.name` override. It now uses the `tenant.tenantNamespace` helper, consistent with other tenant resources.
+
 ## [3.1.0] - 2026-08-12
 
 ### Fixed
