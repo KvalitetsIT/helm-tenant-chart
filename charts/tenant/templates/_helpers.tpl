@@ -92,19 +92,28 @@ app.kubernetes.io/instance: {{ .Release.Name }}
      where $p = fromYaml (include "tenant.merge" (dict "defaults" $.Values.projectDefaults "override" $project))
      Only projectApplication is stripped (tenant-internal); everything else flows through.
      Identity fields (tenantName, projectName, tenantAppProjectName) always override user-supplied values.
+     Injects a `global` block (tenantName, tenantNamespace, plus projectName/projectNamespace when
+     name is set) so the project's templates subchart can read `.Values.global.*`.
      appProject is rebuilt with roleGroups as the lowest-precedence base. */}}
 {{- define "tenant.buildValuesObject" -}}
 {{- $root := .root -}}
 {{- $name := .name -}}
 {{- $p := .p -}}
 {{- $tenantName := include "tenant.name" $root -}}
+{{- $tenantNamespace := include "tenant.tenantNamespace" $root -}}
 {{- $valuesObject := deepCopy (omit $p "projectApplication") -}}
+{{- $global := dict "tenantName" $tenantName "tenantNamespace" $tenantNamespace -}}
+{{- if $name -}}
+  {{- $_ := set $global "projectName" $name -}}
+  {{- $_ := set $global "projectNamespace" (include "tenant.projectNamespace" (list $tenantName $name (($p.namespace).name))) -}}
+{{- end -}}
 {{- $valuesObject = mergeOverwrite $valuesObject (dict
   "tenantName" $tenantName
   "projectName" $name
   "tenantAppProjectName" (include "tenant.tenantAppProjectName" $root)
   "argoNamespace" $root.Values.argoNamespace
-  "tenantNamespace" (include "tenant.tenantNamespace" $root)
+  "tenantNamespace" $tenantNamespace
+  "global" $global
 ) -}}
 {{- if or $root.Values.roleGroups $p.appProject -}}
   {{- $roleGroupOverrides := dict -}}

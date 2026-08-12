@@ -11,6 +11,23 @@ tenantAppProjectName: ""
 # @default -- argocd
 argoNamespace: argocd
 
+# -- Injected by the tenant chart per project. Helm globals shared with the `templates` subchart, so `templates.*` resources can reference identity and namespaces via tpl, e.g. `{{ .Values.global.tenantNamespace }}`.
+# Set manually only for a standalone install.
+# @default -- See [values.yaml](values.yaml)
+global:
+  # -- Name of the tenant.
+  # @default -- ""
+  tenantName: ""
+  # -- Tenant namespace (where the tenant's project Applications live).
+  # @default -- ""
+  tenantNamespace: ""
+  # -- Name of the project.
+  # @default -- ""
+  projectName: ""
+  # -- Project namespace (where this project's workloads live).
+  # @default -- ""
+  projectNamespace: ""
+
 namespace:
   # -- Optional. Override the project namespace name. Defaults to <tenantName>-<projectName>.
   # Use this to decouple the physical namespace from the default naming convention,
