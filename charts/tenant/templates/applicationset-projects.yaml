@@ -66,6 +66,8 @@ spec:
       {{- end }}
   # Effective valuesObject: admin base, then the tenant application block, then the admin project override (admin wins).
   # Only the tenant application is read, so quota and roles etc. stay admin-controlled. An unauthorized repoURL is rejected by the AppProject.
+  # Fills global.projectName / global.projectNamespace per item. Here the namespace is always
+  # <tenant>-<name>: per-project namespace.name overrides are unsupported under an ApplicationSet.
   templatePatch: |
 {{ printf "    {{- $base := `%s` | fromJson -}}" (include "tenant.applicationSetBase" .) }}
 {{ printf "    {{- $overrides := `%s` | fromJson -}}" (include "tenant.applicationSetOverrides" .) }}
@@ -73,5 +75,9 @@ spec:
     {{- $v = mergeOverwrite $v (dict "application" (.application | default dict)) -}}
     {{- $v = mergeOverwrite $v (index $overrides .name | default dict) -}}
     {{- $_ := set $v "projectName" .name -}}
+    {{- $g := $v.global | default dict -}}
+    {{- $_ := set $g "projectName" .name -}}
+    {{- $_ := set $g "projectNamespace" (printf "%s-%s" $g.tenantName .name) -}}
+    {{- $_ := set $v "global" $g -}}
     {{- (dict "spec" (dict "source" (dict "helm" (dict "valuesObject" $v)))) | toYaml -}}` }}
 {{- end }}
