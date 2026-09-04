@@ -1,0 +1,31 @@
+{{/*
+  The tenant's OIDC group mapping, one data key per role.
+
+  Consumers list this cluster-wide by the tenant.kitkube.dk/name label and
+  project a role onto their own model: loki-scope-proxy has no notion of roles
+  and unions every key, while Dependency-Track grants one team per role with
+  different permissions. Merging the roles into a single list would be lossy for
+  the latter, so they stay separate here.
+
+  Contract for consumers: ignore unknown keys, so adding a role is not a
+  breaking change, and treat a group listed under two roles as holding the more
+  privileged one.
+*/}}
+{{- $tenantName := include "tenant.name" . }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tenant-group-mapping
+  namespace: {{ include "tenant.tenantNamespace" . }}
+  labels:
+    {{- include "tenant.labels" . | nindent 4 }}
+    tenant.kitkube.dk/name: {{ $tenantName }}
+data:
+  viewer: |
+    {{- range (index .Values.roleGroups "viewer") | default (list (printf "%s-viewer" $tenantName)) }}
+    {{ . }}
+    {{- end }}
+  developer: |
+    {{- range (index .Values.roleGroups "developer") | default (list (printf "%s-developer" $tenantName)) }}
+    {{ . }}
+    {{- end }}
