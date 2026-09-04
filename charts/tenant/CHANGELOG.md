@@ -8,8 +8,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Changed
+- **Breaking:** renamed the `loki-group-mapping` ConfigMap to `tenant-group-mapping` and split its `groups` key into one key per role (`viewer`, `developer`). Requires `loki-scope-proxy` 0.3.0 or newer.
+
 ### Fixed
-- `loki-group-mapping` ConfigMap was always created in a namespace named after the tenant, ignoring the `tenantNamespace.name` override. It now uses the `tenant.tenantNamespace` helper, consistent with other tenant resources.
+- `tenant-group-mapping` ConfigMap (then named `loki-group-mapping`) was always created in a namespace named after the tenant, ignoring the `tenantNamespace.name` override. It now uses the `tenant.tenantNamespace` helper, consistent with other tenant resources.
 
 ## [3.1.0] - 2026-08-12
 
