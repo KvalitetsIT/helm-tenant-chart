@@ -9,7 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Changed
-- **Breaking:** the `loki-group-mapping` ConfigMap is renamed to `tenant-group-mapping` and its single `groups` key is split into one key per role (`viewer`, `developer`). The old key merged both role group lists, which is fine for Loki but discards the role distinction that consumers such as Dependency-Track express through per-role permissions. Consumers still discover it cluster-wide by the `tenant.kitkube.dk/name` label; they must now read the role keys they care about, ignore unknown keys, and treat a group listed under two roles as holding the more privileged one. `loki-scope-proxy` needs updating for the new name and to union every key.
+- **Breaking:** renamed the `loki-group-mapping` ConfigMap to `tenant-group-mapping` and split its `groups` key into one key per role (`viewer`, `developer`). Requires `loki-scope-proxy` 0.3.0 or newer.
 
 ### Fixed
 - `tenant-group-mapping` ConfigMap (then named `loki-group-mapping`) was always created in a namespace named after the tenant, ignoring the `tenantNamespace.name` override. It now uses the `tenant.tenantNamespace` helper, consistent with other tenant resources.
