@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [3.2.0] - 2026-09-04
+
 ### Changed
 - **Breaking:** renamed the `loki-group-mapping` ConfigMap to `tenant-group-mapping` and split its `groups` key into one key per role (`viewer`, `developer`). Requires `loki-scope-proxy` 0.3.0 or newer.
 
