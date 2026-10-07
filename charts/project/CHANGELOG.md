@@ -8,6 +8,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Changed
+- `vector-audit-rules` ConfigMap - pod metadata is now read with VRL `get_env_var("VAR") ?? "unknown"` instead of `${VAR:-unknown}` config interpolation. Vector 0.57+ disables `${VAR}` interpolation by default, and the kitapp audit sidecar does not re-enable it. Works on Vector 0.55 too, so roll this out before upgrading the kitapp sidecar. Tenants overriding the ConfigMap with their own `${VAR}` references must switch to `get_env_var` before upgrading kitapp, otherwise the literal `${VAR}` text ends up in events.
+- `auditlog.config.aggregatorAddress` now defaults to `http://vector-audit-aggregator.logging.svc.cluster.local:6000`. Vector 0.59 warns that a scheme-less `vector` sink address will default to `https` instead of `http` in a future release ([vectordotdev/vector#26224](https://github.com/vectordotdev/vector/pull/26224)). Overrides without a scheme should add `http://`.
+- Notes for tenants overriding the `vector-audit-rules` ConfigMap ahead of the kitapp Vector 0.59 upgrade:
+  - Sink templates using `{{ field }}` (object keys, file paths, HTTP headers, topics, table names) need a static prefix, e.g. `logs-{{ field }}`. Fully dynamic templates are rejected at startup ([0.57 upgrade guide](https://vector.dev/highlights/2026-07-14-0-57-0-upgrade-guide/#template-confinement)).
+  - Removed syntax: source `type: http` (use `http_server`), `encoding` on `http_server` (use `decoding` and `framing`), and boolean `compression` on the `vector` sink (use `"gzip"` or `"none"`). See the [0.58](https://vector.dev/highlights/2026-08-26-0-58-0-upgrade-guide/) and [0.59](https://vector.dev/highlights/2026-10-05-0-59-0-upgrade-guide/) upgrade guides.
+
 ## [3.1.0] - 2026-08-12
 
 ### Added

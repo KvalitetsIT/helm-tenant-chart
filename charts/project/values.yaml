@@ -414,8 +414,8 @@ auditlog:
   config:
     # -- Port the Vector HTTP source listens on. Must match the kitapp audit.config.httpPort.
     httpPort: 9001
-    # -- Address of the Vector Aggregator.
-    aggregatorAddress: vector-audit-aggregator.logging.svc.cluster.local:6000
+    # -- Address of the Vector Aggregator. Include the scheme: Vector warns that a scheme-less address will switch from `http` to `https` in a future release (https://github.com/vectordotdev/vector/pull/26224). Must end with `:<port>`, which the egress NetworkPolicy reads.
+    aggregatorAddress: http://vector-audit-aggregator.logging.svc.cluster.local:6000
     # -- Vector sink protocol version.
     sinkVersion: "2"
   # -- Validation schema. Each key is an audit event field.
