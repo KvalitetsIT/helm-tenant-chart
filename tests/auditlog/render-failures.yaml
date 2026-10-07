@@ -1,0 +1,38 @@
+# Schemas that must fail at `helm template` instead of producing a config Vector rejects.
+values:
+  - charts/project/ci/minimal-values.yaml
+set:
+  - auditlog.enabled=true
+
+render_fails:
+  - name: field name with a dot
+    schema: {"bad.name": {type: string}}
+    error: 'field name "bad.name" may only contain'
+
+  - name: nested field name with a space
+    schema: {data: {type: object, properties: {"x y": {type: string}}}}
+    error: 'field name "data.x y" may only contain'
+
+  - name: unsupported type
+    schema: {createdAt: {type: date}}
+    error: 'auditlog.schema.createdAt: unsupported type "date"'
+
+  - name: option not supported for type
+    schema: {count: {type: integer, pattern: "^1$"}}
+    error: 'auditlog.schema.count: "pattern" is not supported for type integer'
+
+  - name: invalid regex
+    schema: {code: {type: string, pattern: "("}}
+    error: "error parsing regexp"
+
+  - name: unsupported format
+    schema: {phone: {type: string, format: phone}}
+    error: 'auditlog.schema.phone: unsupported format "phone"'
+
+  - name: non-numeric enum for integer
+    schema: {level: {type: integer, enum: [low]}}
+    error: "auditlog.schema.level: enum value low must be a number"
+
+  - name: requiredKeys entry with a dot
+    schema: {data: {type: object, requiredKeys: ["a.b"]}}
+    error: 'auditlog.schema.data.requiredKeys: "a.b" may only contain'

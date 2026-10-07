@@ -419,7 +419,10 @@ auditlog:
     # -- Vector sink protocol version.
     sinkVersion: "2"
   # -- Validation schema. Each key is an audit event field.
-  # Supported field properties: type (string|object), required, enum, format (email|uuid), requiredKeys (object only).
+  # Field names may contain letters, digits, `_` and `-`. Every field supports `type` (string, number, integer, boolean or object; default string) and `required`.
+  # string: `enum`, `format` (email|uuid), `pattern` (regex), `minLength`, `maxLength`. number/integer: `enum`, `minimum`, `maximum`.
+  # object: `properties` (nested fields with the same options), `requiredKeys` (deprecated, use `properties`).
+  # Optional fields are only checked when present and not null. Unknown types or options fail the render.
   # Override entirely in projectDefaults.auditlog.schema — no merging.
   schema:
     message:

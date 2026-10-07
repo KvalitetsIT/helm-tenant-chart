@@ -6,6 +6,8 @@
 #   2. runs `vector validate` on the rendered config,
 #   3. runs each case's event through the decoding VRL program and checks it is accepted or
 #      rejected with the expected abort message.
+# Files may also list `render_fails`: schemas that `helm template` must reject with an error
+# containing the given text.
 #
 # Requires helm, yq, jq and docker. VECTOR_VERSION should match kitapp's audit.image.tag.
 set -euo pipefail
@@ -42,6 +44,29 @@ for test_file in "$ROOT"/tests/auditlog/*.yaml; do
   helm_args=()
   while IFS= read -r f; do helm_args+=(-f "$ROOT/$f"); done < <(jq -r '.values[]' "$dir/test.json")
   while IFS= read -r s; do helm_args+=(--set "$s"); done < <(jq -r '.set // [] | .[]' "$dir/test.json")
+
+  # render_fails cases: the schema must be rejected by `helm template` with the expected error.
+  count="$(jq '.render_fails // [] | length' "$dir/test.json")"
+  for ((i = 0; i < count; i++)); do
+    case_name="$(jq -r ".render_fails[$i].name" "$dir/test.json")"
+    expected="$(jq -r ".render_fails[$i].error" "$dir/test.json")"
+    jq ".render_fails[$i] | {auditlog: {schema: .schema}}" "$dir/test.json" >"$dir/schema.json"
+
+    if helm template t "$ROOT/charts/project" "${helm_args[@]}" -f "$dir/schema.json" \
+      --show-only templates/auditlog-configmap.yaml >/dev/null 2>"$dir/render.log"; then
+      fail "$case_name"
+      printf '        expected render error containing: %s\n        actual:   rendered\n' "$expected"
+    elif grep -qF -- "$expected" "$dir/render.log"; then
+      pass "$case_name"
+    else
+      fail "$case_name"
+      printf '        expected render error containing: %s\n        actual:   %s\n' "$expected" "$(cat "$dir/render.log")"
+    fi
+  done
+
+  if [[ "$(jq '.cases // [] | length' "$dir/test.json")" == 0 ]]; then
+    continue
+  fi
 
   helm template t "$ROOT/charts/project" "${helm_args[@]}" \
     --show-only templates/auditlog-configmap.yaml | yq '.data."vector.yaml"' >"$dir/vector.yaml"

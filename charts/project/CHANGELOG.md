@@ -8,6 +8,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+- `auditlog.schema` - nested fields via `properties` on `type: object`, with the same options as top-level fields, to any depth.
+- `auditlog.schema` - `pattern` (regex), `minLength` and `maxLength` for strings.
+- `auditlog.schema` - `type: number`, `type: integer` (with `enum`, `minimum`, `maximum`) and `type: boolean`.
+
+### Deprecated
+- `auditlog.schema.<field>.requiredKeys` - still works, but use `properties` with `required: true` instead.
+
+### Changed
+- `auditlog.schema` - unknown types, formats and options, field names outside `[A-Za-z0-9_-]` and invalid regex patterns now fail the render. Previously they were ignored or produced a config Vector rejected.
+- `auditlog.schema` - optional fields that are present are now type-checked, and an optional field set to `null` is treated as absent. Previously an optional object or enum field set to `null` was rejected.
+
+### Fixed
+- `auditlog.schema` - enum values containing `<`, `>`, `&`, `"` or `{{` no longer produce invalid VRL.
+- `auditlog.schema` - a required string field sent as another type is now rejected with `invalid: <field> must be a string` instead of a VRL runtime error.
+
 ### Changed
 - `vector-audit-rules` ConfigMap - pod metadata is now read with VRL `get_env_var("VAR") ?? "unknown"` instead of `${VAR:-unknown}` config interpolation. Vector 0.57+ disables `${VAR}` interpolation by default, and the kitapp audit sidecar does not re-enable it. Works on Vector 0.55 too, so roll this out before upgrading the kitapp sidecar. Tenants overriding the ConfigMap with their own `${VAR}` references must switch to `get_env_var` before upgrading kitapp, otherwise the literal `${VAR}` text ends up in events.
 - `auditlog.config.aggregatorAddress` now defaults to `http://vector-audit-aggregator.logging.svc.cluster.local:6000`. Vector 0.59 warns that a scheme-less `vector` sink address will default to `https` instead of `http` in a future release ([vectordotdev/vector#26224](https://github.com/vectordotdev/vector/pull/26224)). Overrides without a scheme should add `http://`.

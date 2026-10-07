@@ -1,0 +1,122 @@
+# charts/project/ci/nested-auditlog-values.yaml: nested properties, pattern, lengths, numbers,
+# booleans, escaping and the deprecated requiredKeys alias.
+values:
+  - charts/project/ci/nested-auditlog-values.yaml
+
+cases:
+  - name: valid minimal event
+    event: {message: Exported, actor: a@b.dk, action: READ, dryRun: false, data: {resourceId: ABC-12}}
+    expect: accept
+
+  - name: valid full event
+    event:
+      message: Exported
+      actor: a@b.dk
+      action: EXPORT<CSV>
+      severity: 3
+      score: 2.5
+      priority: 2
+      dryRun: true
+      data: {resourceId: ABC-12, note: "it's", owner: {id: 6f1c2a9e-3b4d-4e5f-8a7b-1c2d3e4f5a6b, team: core}}
+      meta: {source: api}
+    expect: accept
+
+  - name: enum value with quotes
+    event: {message: Exported, actor: a@b.dk, action: SHARE "public", dryRun: false, data: {resourceId: ABC-12}}
+    expect: accept
+
+  - name: enum value with template braces
+    event: {message: Exported, actor: a@b.dk, action: "{{ any }}", dryRun: false, data: {resourceId: ABC-12}}
+    expect: accept
+
+  - name: action not in enum
+    event: {message: Exported, actor: a@b.dk, action: DELETE, dryRun: false, data: {resourceId: ABC-12}}
+    expect: {reject: 'invalid: action must be one of READ, EXPORT<CSV>, SHARE "public", {{ any }}'}
+
+  - name: message too short
+    event: {message: ab, actor: a@b.dk, action: READ, dryRun: false, data: {resourceId: ABC-12}}
+    expect: {reject: "invalid: message must be at least 3 characters"}
+
+  - name: message too long
+    event: {message: "123456789012345678901234567890123456789012345678901", actor: a@b.dk, action: READ, dryRun: false, data: {resourceId: ABC-12}}
+    expect: {reject: "invalid: message must be at most 50 characters"}
+
+  - name: required string is not a string
+    event: {message: 12345, actor: a@b.dk, action: READ, dryRun: false, data: {resourceId: ABC-12}}
+    expect: {reject: "invalid: message must be a string"}
+
+  - name: integer given a float
+    event: {message: Exported, actor: a@b.dk, action: READ, severity: 2.5, dryRun: false, data: {resourceId: ABC-12}}
+    expect: {reject: "invalid: severity must be an integer"}
+
+  - name: integer given a numeric string
+    event: {message: Exported, actor: a@b.dk, action: READ, severity: "3", dryRun: false, data: {resourceId: ABC-12}}
+    expect: {reject: "invalid: severity must be an integer"}
+
+  - name: integer below minimum
+    event: {message: Exported, actor: a@b.dk, action: READ, severity: 0, dryRun: false, data: {resourceId: ABC-12}}
+    expect: {reject: "invalid: severity must be >= 1"}
+
+  - name: integer above maximum
+    event: {message: Exported, actor: a@b.dk, action: READ, severity: 6, dryRun: false, data: {resourceId: ABC-12}}
+    expect: {reject: "invalid: severity must be <= 5"}
+
+  - name: number accepts an integer
+    event: {message: Exported, actor: a@b.dk, action: READ, score: 7, dryRun: false, data: {resourceId: ABC-12}}
+    expect: accept
+
+  - name: number given a string
+    event: {message: Exported, actor: a@b.dk, action: READ, score: high, dryRun: false, data: {resourceId: ABC-12}}
+    expect: {reject: "invalid: score must be a number"}
+
+  - name: number below fractional minimum
+    event: {message: Exported, actor: a@b.dk, action: READ, score: -2, dryRun: false, data: {resourceId: ABC-12}}
+    expect: {reject: "invalid: score must be >= -1.5"}
+
+  - name: number above large maximum
+    event: {message: Exported, actor: a@b.dk, action: READ, score: 1000000.5, dryRun: false, data: {resourceId: ABC-12}}
+    expect: {reject: "invalid: score must be <= 1000000"}
+
+  - name: optional number is null
+    event: {message: Exported, actor: a@b.dk, action: READ, score: null, dryRun: false, data: {resourceId: ABC-12}}
+    expect: accept
+
+  - name: integer not in enum
+    event: {message: Exported, actor: a@b.dk, action: READ, priority: 4, dryRun: false, data: {resourceId: ABC-12}}
+    expect: {reject: "invalid: priority must be one of 1, 2, 3"}
+
+  - name: missing required boolean
+    event: {message: Exported, actor: a@b.dk, action: READ, data: {resourceId: ABC-12}}
+    expect: {reject: "missing/invalid: dryRun"}
+
+  - name: boolean given a string
+    event: {message: Exported, actor: a@b.dk, action: READ, dryRun: "false", data: {resourceId: ABC-12}}
+    expect: {reject: "invalid: dryRun must be a boolean"}
+
+  - name: nested string does not match pattern
+    event: {message: Exported, actor: a@b.dk, action: READ, dryRun: false, data: {resourceId: abc-12}}
+    expect: {reject: 'invalid: data.resourceId must match pattern ^[A-Z]{3}-\d+$'}
+
+  - name: nested required string missing
+    event: {message: Exported, actor: a@b.dk, action: READ, dryRun: false, data: {}}
+    expect: {reject: "missing/invalid: data.resourceId"}
+
+  - name: pattern with a single quote
+    event: {message: Exported, actor: a@b.dk, action: READ, dryRun: false, data: {resourceId: ABC-12, note: no quote}}
+    expect: {reject: "invalid: data.note must match pattern ^[^']*'[^']*$"}
+
+  - name: nested object is not an object
+    event: {message: Exported, actor: a@b.dk, action: READ, dryRun: false, data: {resourceId: ABC-12, owner: core}}
+    expect: {reject: "invalid: data.owner must be an object"}
+
+  - name: required child of present optional object missing
+    event: {message: Exported, actor: a@b.dk, action: READ, dryRun: false, data: {resourceId: ABC-12, owner: {team: core}}}
+    expect: {reject: "missing/invalid: data.owner.id"}
+
+  - name: two levels deep format check
+    event: {message: Exported, actor: a@b.dk, action: READ, dryRun: false, data: {resourceId: ABC-12, owner: {id: not-a-uuid}}}
+    expect: {reject: "invalid: data.owner.id must be a valid UUID"}
+
+  - name: requiredKeys alias missing key
+    event: {message: Exported, actor: a@b.dk, action: READ, dryRun: false, data: {resourceId: ABC-12}, meta: {}}
+    expect: {reject: "missing/invalid: meta.source"}

@@ -1,0 +1,84 @@
+tenantName: acme
+projectName: nested-reporting
+tenantAppProjectName: acme-apps
+
+application:
+  source:
+    path: nested-reporting/apps
+    repoURL: https://github.com/example/tenant-repo.git
+    targetRevision: "main"
+
+resourceQuota:
+  spec:
+    hard:
+      limits.cpu: "4"
+      limits.memory: 8Gi
+      requests.storage: 100Gi
+
+auditlog:
+  enabled: true
+  schema:
+    # string length bounds
+    message:
+      type: string
+      required: true
+      minLength: 3
+      maxLength: 50
+    actor:
+      type: string
+      required: true
+      format: email
+    # enum values containing characters that need escaping in VRL
+    action:
+      type: string
+      required: true
+      enum:
+        - READ
+        - EXPORT<CSV>
+        - SHARE "public"
+        - "{{ any }}"
+    # integer with bounds
+    severity:
+      type: integer
+      minimum: 1
+      maximum: 5
+    # number with fractional and large bounds
+    score:
+      type: number
+      minimum: -1.5
+      maximum: 1000000
+    # integer enum
+    priority:
+      type: integer
+      enum: [1, 2, 3]
+    # required boolean (false is a valid value)
+    dryRun:
+      type: boolean
+      required: true
+    # nested properties, two levels deep
+    data:
+      type: object
+      required: true
+      properties:
+        resourceId:
+          type: string
+          required: true
+          pattern: '^[A-Z]{3}-\d+$'
+        # pattern containing a single quote
+        note:
+          type: string
+          pattern: "^[^']*'[^']*$"
+        owner:
+          type: object
+          properties:
+            id:
+              type: string
+              required: true
+              format: uuid
+            team:
+              type: string
+    # deprecated requiredKeys alias
+    meta:
+      type: object
+      requiredKeys:
+        - source
