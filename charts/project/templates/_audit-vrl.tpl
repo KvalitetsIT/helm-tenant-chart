@@ -9,18 +9,14 @@
 
 
 {{/*
-  project.auditlog.vrl.field
-  VRL assertions for one schema field. Validates the field config, renders the required check,
-  then hands the type-specific checks to project.auditlog.vrl.<string|number|boolean|object>.
-  Call with: (dict "path" <list of field names from the event root> "config" <field config>)
-
-  Required fields must be present and not nullish. Every other check only runs when the field
-  is present and not null, so children of an absent optional object are skipped.
+  project.auditlog.vrl.validate
+  Fails the render when a schema field is misconfigured: a field name VRL paths can't safely
+  hold, an unknown type, or an option the type doesn't support. Renders nothing otherwise.
+  Call with the same dict as project.auditlog.vrl.field.
 */}}
-{{- define "project.auditlog.vrl.field" -}}
-{{- $segments := .path -}}
+{{- define "project.auditlog.vrl.validate" -}}
 {{- $config := .config | default dict -}}
-{{- $name := join "." $segments -}}
+{{- $name := join "." .path -}}
 {{- $type := $config.type | default "string" -}}
 {{- /* Options each type accepts besides `type` and `required`. Also the list of valid types. */ -}}
 {{- $options := dict
@@ -30,7 +26,7 @@
       "boolean" (list)
       "object"  (list "properties" "requiredKeys") -}}
 
-{{- if not (regexMatch "^[A-Za-z0-9_-]+$" (last $segments)) -}}
+{{- if not (regexMatch "^[A-Za-z0-9_-]+$" (last .path)) -}}
 {{- fail (printf "auditlog.schema: field name %q may only contain letters, digits, '_' and '-'" $name) -}}
 {{- end -}}
 {{- if not (hasKey $options $type) -}}
@@ -41,6 +37,24 @@
 {{- fail (printf "auditlog.schema.%s: %q is not supported for type %s" $name $key $type) -}}
 {{- end -}}
 {{- end -}}
+{{- end }}
+
+
+{{/*
+  project.auditlog.vrl.field
+  VRL assertions for one schema field. Validates the field config, renders the required check,
+  then hands the type-specific checks to project.auditlog.vrl.<string|number|boolean|object>.
+  Call with: (dict "path" <list of field names from the event root> "config" <field config>)
+
+  Required fields must be present and not nullish. Every other check only runs when the field
+  is present and not null, so children of an absent optional object are skipped.
+*/}}
+{{- define "project.auditlog.vrl.field" -}}
+{{- include "project.auditlog.vrl.validate" . -}}
+{{- $segments := .path -}}
+{{- $config := .config | default dict -}}
+{{- $name := join "." $segments -}}
+{{- $type := $config.type | default "string" -}}
 
 {{- $path := "" -}}
 {{- range $segments -}}
