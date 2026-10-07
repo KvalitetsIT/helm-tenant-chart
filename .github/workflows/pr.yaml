@@ -144,13 +144,18 @@ jobs:
           kubectl apply -f https://raw.githubusercontent.com/kyverno/kyverno/refs/tags/v1.18.1/config/crds/policies.kyverno.io/policies.kyverno.io_policyexceptions.yaml
           wait_for_crd policyexceptions.policies.kyverno.io
 
+          kubectl apply -f https://raw.githubusercontent.com/Hostzero-GmbH/keycloak-operator/refs/tags/v0.13.1/config/crd/bases/keycloak.hostzero.com_keycloakgroups.yaml
+          wait_for_crd keycloakgroups.keycloak.hostzero.com
+
       - name: Pre-create required namespaces
         if: steps.list-changed.outputs.changed == 'true'
         run: |
           # argocd: AppProject resources default to namespace: argocd (configurable via argoNamespace)
           # acme:   Application resources go to namespace: .Values.tenantName (acme in all project CI files)
+          # auth:   KeycloakGroup resources go to namespace: .Values.keycloakGroup.namespace
           kubectl create namespace argocd --dry-run=client -o yaml | kubectl apply -f -
           kubectl create namespace acme --dry-run=client -o yaml | kubectl apply -f -
+          kubectl create namespace auth --dry-run=client -o yaml | kubectl apply -f -
 
       - name: Run chart-testing (install)
         if: steps.list-changed.outputs.changed == 'true'

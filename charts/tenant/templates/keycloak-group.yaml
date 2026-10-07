@@ -1,5 +1,7 @@
 {{- if and .Values.keycloakGroup.enabled (.Capabilities.APIVersions.Has "keycloak.hostzero.com/v1beta1") }}
 {{- $tenantName := include "tenant.name" . }}
+{{- /* A KeycloakGroup names exactly one parent. Nested groups inherit the realm from the
+       parent chain, so realmRef is only set when the tenant group sits at the top level. */}}
 apiVersion: keycloak.hostzero.com/v1beta1
 kind: KeycloakGroup
 metadata:
@@ -8,14 +10,15 @@ metadata:
   labels:
     {{- include "tenant.labels" . | nindent 4 }}
 spec:
-  realmRef:
-    name: {{ .Values.keycloakGroup.realmRef }}
   {{- with .Values.keycloakGroup.parentGroupRef }}
   parentGroupRef:
     name: {{ . }}
+  {{- else }}
+  realmRef:
+    name: {{ .Values.keycloakGroup.realmRef }}
   {{- end }}
-  definition:
-    name: {{ $tenantName }}
+  name: {{ $tenantName }}
+  definition: {}
 ---
 apiVersion: keycloak.hostzero.com/v1beta1
 kind: KeycloakGroup
@@ -25,12 +28,10 @@ metadata:
   labels:
     {{- include "tenant.labels" . | nindent 4 }}
 spec:
-  realmRef:
-    name: {{ .Values.keycloakGroup.realmRef }}
   parentGroupRef:
     name: {{ $tenantName }}-tenant-group
-  definition:
-    name: {{ $tenantName }}-viewer
+  name: {{ $tenantName }}-viewer
+  definition: {}
 ---
 apiVersion: keycloak.hostzero.com/v1beta1
 kind: KeycloakGroup
@@ -40,10 +41,8 @@ metadata:
   labels:
     {{- include "tenant.labels" . | nindent 4 }}
 spec:
-  realmRef:
-    name: {{ .Values.keycloakGroup.realmRef }}
   parentGroupRef:
     name: {{ $tenantName }}-tenant-group
-  definition:
-    name: {{ $tenantName }}-developer
+  name: {{ $tenantName }}-developer
+  definition: {}
 {{- end }}

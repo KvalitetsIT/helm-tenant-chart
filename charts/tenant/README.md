@@ -78,8 +78,8 @@ A Helm chart for creating a new tenant in the Kithosting platform
 | projects.\<project-name>.templates | object | `{"enabled":true}` | Optional. Enable or disable the `templates` subchart for this project. When false, no NetworkPolicies (default or custom) are rendered. Overrides `projectDefaults.templates`. |
 | keycloakGroup.enabled | bool | `false` | Enable KeycloakGroup resource creation. Also requires the keycloak-operator CRD to be present in the cluster. |
 | keycloakGroup.namespace | string | `"auth"` | Namespace where the KeycloakGroup resource is created. |
-| keycloakGroup.realmRef | string | `"infrastructure"` | Keycloak realm to create the group in. |
-| keycloakGroup.parentGroupRef | string | `"tenants"` | Parent group under which the tenant group is nested. |
+| keycloakGroup.realmRef | string | `"infrastructure"` | KeycloakRealm resource the tenant group is created in. Only used when `parentGroupRef` is empty; a nested group inherits its realm from the parent chain. |
+| keycloakGroup.parentGroupRef | string | `"tenants"` | KeycloakGroup resource (in `namespace`) the tenant group is nested under. Set to empty to create the tenant group at the top level of `realmRef` instead. |
 | grafanaOrg.enabled | bool | `false` | Enable GrafanaOrg and GrafanaOrgDatasource resources. Also requires the grafana-org-operator CRD to be present in the cluster. |
 | grafanaOrg.grafanaInstanceRef | string | `"monitoring/grafana"` | Cross-namespace ref to the GrafanaInstance. |
 | grafanaOrg.orgName | string | `""` | Grafana display name for the org. Defaults to the tenant name. |
