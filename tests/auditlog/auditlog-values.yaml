@@ -4,25 +4,62 @@ values:
 
 cases:
   - name: valid event
-    event: {message: m, actor: doctor@hospital.dk, action: READ, data: {resourceId: r1, resourceType: PatientRecord}}
+    event:
+      message: m
+      actor: doctor@example.com
+      action: READ
+      data:
+        resourceId: r1
+        resourceType: PatientRecord
     expect: accept
 
   - name: actor is not an email
-    event: {message: m, actor: doctor, action: READ, data: {resourceId: r1, resourceType: PatientRecord}}
-    expect: {reject: "invalid: actor must be a valid email address"}
+    event:
+      message: m
+      actor: doctor
+      action: READ
+      data:
+        resourceId: r1
+        resourceType: PatientRecord
+    expect:
+      reject: 'invalid: actor must be a valid email address'
 
   - name: action not in enum
-    event: {message: m, actor: doctor@hospital.dk, action: EXPORT, data: {resourceId: r1, resourceType: PatientRecord}}
-    expect: {reject: "invalid: action must be one of READ, CREATE, UPDATE, DELETE"}
+    event:
+      message: m
+      actor: doctor@example.com
+      action: EXPORT
+      data:
+        resourceId: r1
+        resourceType: PatientRecord
+    expect:
+      reject: 'invalid: action must be one of READ, CREATE, UPDATE, DELETE'
 
   - name: missing required data
-    event: {message: m, actor: doctor@hospital.dk, action: READ}
-    expect: {reject: "missing/invalid: data"}
+    event:
+      message: m
+      actor: doctor@example.com
+      action: READ
+    expect:
+      reject: 'missing/invalid: data'
 
   - name: data missing a required key
-    event: {message: m, actor: doctor@hospital.dk, action: READ, data: {resourceId: r1}}
-    expect: {reject: "missing/invalid: data.resourceType"}
+    event:
+      message: m
+      actor: doctor@example.com
+      action: READ
+      data:
+        resourceId: r1
+    expect:
+      reject: 'missing/invalid: data.resourceType'
 
   - name: data required key is an empty string
-    event: {message: m, actor: doctor@hospital.dk, action: READ, data: {resourceId: "", resourceType: PatientRecord}}
-    expect: {reject: "missing/invalid: data.resourceId"}
+    event:
+      message: m
+      actor: doctor@example.com
+      action: READ
+      data:
+        resourceId: ""
+        resourceType: PatientRecord
+    expect:
+      reject: 'missing/invalid: data.resourceId'

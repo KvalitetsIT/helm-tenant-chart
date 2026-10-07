@@ -4,29 +4,86 @@ values:
 
 cases:
   - name: valid event without optional fields
-    event: {message: m, actor: 6f1c2a9e-3b4d-4e5f-8a7b-1c2d3e4f5a6b, action: EXPORT, data: {resourceId: r1, resourceType: t, ownerId: o1}}
+    event:
+      message: m
+      actor: 6f1c2a9e-3b4d-4e5f-8a7b-1c2d3e4f5a6b
+      action: EXPORT
+      data:
+        resourceId: r1
+        resourceType: t
+        ownerId: o1
     expect: accept
 
   - name: valid event with optional fields
-    event: {message: m, actor: 6f1c2a9e-3b4d-4e5f-8a7b-1c2d3e4f5a6b, action: READ, classification: internal, correlationId: 0a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d, data: {resourceId: r1, resourceType: t, ownerId: o1}}
+    event:
+      message: m
+      actor: 6f1c2a9e-3b4d-4e5f-8a7b-1c2d3e4f5a6b
+      action: READ
+      classification: internal
+      correlationId: 0a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d
+      data:
+        resourceId: r1
+        resourceType: t
+        ownerId: o1
     expect: accept
 
   - name: actor is not a uuid
-    event: {message: m, actor: doctor@hospital.dk, action: READ, data: {resourceId: r1, resourceType: t, ownerId: o1}}
-    expect: {reject: "invalid: actor must be a valid UUID"}
+    event:
+      message: m
+      actor: doctor@example.com
+      action: READ
+      data:
+        resourceId: r1
+        resourceType: t
+        ownerId: o1
+    expect:
+      reject: 'invalid: actor must be a valid UUID'
 
   - name: uppercase uuid is rejected
-    event: {message: m, actor: 6F1C2A9E-3B4D-4E5F-8A7B-1C2D3E4F5A6B, action: READ, data: {resourceId: r1, resourceType: t, ownerId: o1}}
-    expect: {reject: "invalid: actor must be a valid UUID"}
+    event:
+      message: m
+      actor: 6F1C2A9E-3B4D-4E5F-8A7B-1C2D3E4F5A6B
+      action: READ
+      data:
+        resourceId: r1
+        resourceType: t
+        ownerId: o1
+    expect:
+      reject: 'invalid: actor must be a valid UUID'
 
   - name: optional classification not in enum
-    event: {message: m, actor: 6f1c2a9e-3b4d-4e5f-8a7b-1c2d3e4f5a6b, action: READ, classification: secret, data: {resourceId: r1, resourceType: t, ownerId: o1}}
-    expect: {reject: "invalid: classification must be one of public, internal, confidential, restricted"}
+    event:
+      message: m
+      actor: 6f1c2a9e-3b4d-4e5f-8a7b-1c2d3e4f5a6b
+      action: READ
+      classification: secret
+      data:
+        resourceId: r1
+        resourceType: t
+        ownerId: o1
+    expect:
+      reject: 'invalid: classification must be one of public, internal, confidential, restricted'
 
   - name: optional correlationId is not a uuid
-    event: {message: m, actor: 6f1c2a9e-3b4d-4e5f-8a7b-1c2d3e4f5a6b, action: READ, correlationId: abc, data: {resourceId: r1, resourceType: t, ownerId: o1}}
-    expect: {reject: "invalid: correlationId must be a valid UUID"}
+    event:
+      message: m
+      actor: 6f1c2a9e-3b4d-4e5f-8a7b-1c2d3e4f5a6b
+      action: READ
+      correlationId: abc
+      data:
+        resourceId: r1
+        resourceType: t
+        ownerId: o1
+    expect:
+      reject: 'invalid: correlationId must be a valid UUID'
 
   - name: data missing ownerId
-    event: {message: m, actor: 6f1c2a9e-3b4d-4e5f-8a7b-1c2d3e4f5a6b, action: READ, data: {resourceId: r1, resourceType: t}}
-    expect: {reject: "missing/invalid: data.ownerId"}
+    event:
+      message: m
+      actor: 6f1c2a9e-3b4d-4e5f-8a7b-1c2d3e4f5a6b
+      action: READ
+      data:
+        resourceId: r1
+        resourceType: t
+    expect:
+      reject: 'missing/invalid: data.ownerId'
