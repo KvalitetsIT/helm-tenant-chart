@@ -10,7 +10,8 @@
 
 {{/*
   project.auditlog.vrl.field
-  VRL assertions for one schema field, recursing into object `properties`.
+  VRL assertions for one schema field. Validates the field config, renders the required check,
+  then hands the type-specific checks to project.auditlog.vrl.<string|number|boolean|object>.
   Call with: (dict "path" <list of field names from the event root> "config" <field config>)
 
   Required fields must be present and not nullish. Every other check only runs when the field
@@ -21,6 +22,7 @@
 {{- $config := .config | default dict -}}
 {{- $name := join "." $segments -}}
 {{- $type := $config.type | default "string" -}}
+{{- /* Options each type accepts besides `type` and `required`. Also the list of valid types. */ -}}
 {{- $options := dict
       "string"  (list "enum" "format" "pattern" "minLength" "maxLength")
       "number"  (list "enum" "minimum" "maximum")
@@ -44,6 +46,7 @@
 {{- range $segments -}}
 {{- $path = printf "%s.%q" $path . -}}
 {{- end -}}
+{{- $field := dict "segments" $segments "path" $path "name" $name "type" $type "config" $config -}}
 
 {{- if $config.required }}
 if !exists({{ $path }}) || is_nullish({{ $path }}) {
@@ -51,8 +54,21 @@ if !exists({{ $path }}) || is_nullish({{ $path }}) {
 }
 {{- end }}
 if exists({{ $path }}) && !is_null({{ $path }}) {
+{{- include (printf "project.auditlog.vrl.%s" (eq $type "integer" | ternary "number" $type)) $field }}
+}
+{{- end }}
 
-{{- if eq $type "string" }}
+
+{{/*
+  project.auditlog.vrl.string
+  Type check and constraints for a present string field: enum, format, pattern, minLength,
+  maxLength. Required strings are also stripped of surrounding whitespace.
+  Call with the field dict built by project.auditlog.vrl.field.
+*/}}
+{{- define "project.auditlog.vrl.string" -}}
+{{- $path := .path -}}
+{{- $name := .name -}}
+{{- $config := .config }}
   if !is_string({{ $path }}) {
     abort {{ include "project.auditlog.vrl.str" (printf "invalid: %s must be a string" $name) }}
   }
@@ -103,9 +119,19 @@ if exists({{ $path }}) && !is_null({{ $path }}) {
     abort {{ include "project.auditlog.vrl.str" (printf "invalid: %s must be at most %d characters" $name (int $config.maxLength)) }}
   }
 {{- end }}
+{{- end }}
 
-{{- else if or (eq $type "number") (eq $type "integer") }}
-{{- if eq $type "integer" }}
+
+{{/*
+  project.auditlog.vrl.number
+  Type check and constraints for a present `number` or `integer` field: enum, minimum, maximum.
+  Call with the field dict built by project.auditlog.vrl.field.
+*/}}
+{{- define "project.auditlog.vrl.number" -}}
+{{- $path := .path -}}
+{{- $name := .name -}}
+{{- $config := .config -}}
+{{- if eq .type "integer" }}
   if !is_integer({{ $path }}) {
     abort {{ include "project.auditlog.vrl.str" (printf "invalid: %s must be an integer" $name) }}
   }
@@ -136,18 +162,36 @@ if exists({{ $path }}) && !is_null({{ $path }}) {
     abort {{ include "project.auditlog.vrl.str" (printf "invalid: %s must be <= %s" $name (toJson $config.maximum)) }}
   }
 {{- end }}
+{{- end }}
 
-{{- else if eq $type "boolean" }}
-  if !is_boolean({{ $path }}) {
-    abort {{ include "project.auditlog.vrl.str" (printf "invalid: %s must be a boolean" $name) }}
+
+{{/*
+  project.auditlog.vrl.boolean
+  Type check for a present boolean field.
+  Call with the field dict built by project.auditlog.vrl.field.
+*/}}
+{{- define "project.auditlog.vrl.boolean" }}
+  if !is_boolean({{ .path }}) {
+    abort {{ include "project.auditlog.vrl.str" (printf "invalid: %s must be a boolean" .name) }}
   }
+{{- end }}
 
-{{- else if eq $type "object" }}
+
+{{/*
+  project.auditlog.vrl.object
+  Type check for a present object field, then its children: `properties` recurse through
+  project.auditlog.vrl.field, and the deprecated `requiredKeys` become required checks of any type.
+  Call with the field dict built by project.auditlog.vrl.field.
+*/}}
+{{- define "project.auditlog.vrl.object" -}}
+{{- $segments := .segments -}}
+{{- $path := .path -}}
+{{- $name := .name -}}
+{{- $config := .config }}
   if !is_object({{ $path }}) {
     abort {{ include "project.auditlog.vrl.str" (printf "invalid: %s must be an object" $name) }}
   }
 
-{{- /* Deprecated: requiredKeys entries are required children of any type. Use properties. */ -}}
 {{- range $config.requiredKeys }}
 {{- if not (regexMatch "^[A-Za-z0-9_-]+$" .) -}}
 {{- fail (printf "auditlog.schema.%s.requiredKeys: %q may only contain letters, digits, '_' and '-'" $name .) -}}
@@ -160,8 +204,6 @@ if exists({{ $path }}) && !is_null({{ $path }}) {
 {{- range $child, $childConfig := $config.properties }}
 {{ include "project.auditlog.vrl.field" (dict "path" (append $segments $child) "config" $childConfig) | indent 2 }}
 {{- end }}
-{{- end }}
-}
 {{- end }}
 
 
