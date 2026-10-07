@@ -1,0 +1,54 @@
+# Chart default auditlog.schema: message, actor and action required, data optional.
+values:
+  - charts/project/ci/minimal-values.yaml
+set:
+  - auditlog.enabled=true
+
+cases:
+  - name: valid event with data
+    event:
+      message: User updated record
+      actor: doctor@example.com
+      action: UPDATE
+      data:
+        resourceId: patient-42
+    expect: accept
+
+  - name: valid event without data
+    event:
+      message: User logged in
+      actor: doctor@example.com
+      action: LOGIN
+    expect: accept
+
+  - name: missing message
+    event:
+      actor: doctor@example.com
+      action: UPDATE
+    expect:
+      reject: 'missing/invalid: message'
+
+  - name: blank actor
+    event:
+      message: m
+      actor: '   '
+      action: UPDATE
+    expect:
+      reject: 'missing/invalid: actor'
+
+  - name: null action
+    event:
+      message: m
+      actor: doctor@example.com
+      action: null
+    expect:
+      reject: 'missing/invalid: action'
+
+  - name: data is not an object
+    event:
+      message: m
+      actor: doctor@example.com
+      action: UPDATE
+      data: patient-42
+    expect:
+      reject: 'invalid: data must be an object'

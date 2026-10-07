@@ -414,12 +414,15 @@ auditlog:
   config:
     # -- Port the Vector HTTP source listens on. Must match the kitapp audit.config.httpPort.
     httpPort: 9001
-    # -- Address of the Vector Aggregator.
-    aggregatorAddress: vector-audit-aggregator.logging.svc.cluster.local:6000
+    # -- Address of the Vector Aggregator. Include the scheme: Vector warns that a scheme-less address will switch from `http` to `https` in a future release (https://github.com/vectordotdev/vector/pull/26224). Must end with `:<port>`, which the egress NetworkPolicy reads.
+    aggregatorAddress: http://vector-audit-aggregator.logging.svc.cluster.local:6000
     # -- Vector sink protocol version.
     sinkVersion: "2"
   # -- Validation schema. Each key is an audit event field.
-  # Supported field properties: type (string|object), required, enum, format (email|uuid), requiredKeys (object only).
+  # Field names may contain letters, digits, `_` and `-`. Every field supports `type` (string, number, integer, boolean or object; default string) and `required`.
+  # string: `enum`, `format` (email|uuid), `pattern` (regex), `minLength`, `maxLength`. number/integer: `enum`, `minimum`, `maximum`.
+  # object: `properties` (nested fields with the same options), `requiredKeys` (deprecated, use `properties`).
+  # Optional fields are only checked when present and not null. Unknown types or options fail the render.
   # Override entirely in projectDefaults.auditlog.schema — no merging.
   schema:
     message:

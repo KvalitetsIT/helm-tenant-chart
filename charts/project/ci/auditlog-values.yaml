@@ -15,16 +15,32 @@ resourceQuota:
       limits.memory: 8Gi
       requests.storage: 100Gi
 
+# Simple audit log schema: flat string fields plus a free-form `data` object.
+# See nested-auditlog-values.yaml for nested objects, numbers, booleans and patterns.
+#
+# Accepted event:
+# {
+#   "message": "User viewed patient record",
+#   "actor": "doctor@example.com",
+#   "action": "READ",
+#   "data": {
+#     "resourceId": "patient-42",
+#     "anything": ["else", "goes", "here"]
+#   }
+# }
 auditlog:
   enabled: true
   schema:
+    # "User viewed patient record". Required, must not be blank.
     message:
       type: string
       required: true
+    # "doctor@example.com"
     actor:
       type: string
       required: true
       format: email
+    # "READ". Only these values are accepted.
     action:
       type: string
       required: true
@@ -33,9 +49,7 @@ auditlog:
         - CREATE
         - UPDATE
         - DELETE
+    # Optional. Must be a JSON object when present; its contents are not checked.
     data:
       type: object
-      required: true
-      requiredKeys:
-        - resourceId
-        - resourceType
+      required: false

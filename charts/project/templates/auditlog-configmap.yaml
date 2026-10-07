@@ -27,10 +27,10 @@ data:
           - audit_http_source
         source: |
           .kubernetes = {}
-          .kubernetes.pod_name = "${POD_NAME:-unknown}"
-          .kubernetes.pod_namespace = "${POD_NAMESPACE:-unknown}"
-          .kubernetes.node_name = "${NODE_NAME:-unknown}"
-          .kubernetes.app_label = "${APP_LABEL:-unknown}"
+          .kubernetes.pod_name = get_env_var("POD_NAME") ?? "unknown"
+          .kubernetes.pod_namespace = get_env_var("POD_NAMESPACE") ?? "unknown"
+          .kubernetes.node_name = get_env_var("NODE_NAME") ?? "unknown"
+          .kubernetes.app_label = get_env_var("APP_LABEL") ?? "unknown"
           .kubernetes.namespace_labels = {}
           .kubernetes.namespace_labels."tenant.kitkube.dk/name" = {{ default .Values.tenantName .Values.auditlog.tenantName | quote }}
     sinks:
