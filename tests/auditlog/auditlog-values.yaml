@@ -1,65 +1,56 @@
-# charts/project/ci/auditlog-values.yaml: email format, enum and requiredKeys.
+# charts/project/ci/auditlog-values.yaml: simple flat schema with email format, enum and a free-form object.
 values:
   - charts/project/ci/auditlog-values.yaml
 
 cases:
   - name: valid event
     event:
-      message: m
+      message: User viewed patient record
       actor: doctor@example.com
       action: READ
       data:
-        resourceId: r1
-        resourceType: PatientRecord
+        resourceId: patient-42
+        anything:
+          - else
+          - goes
+          - here
     expect: accept
+
+  - name: valid event without data
+    event:
+      message: User logged in
+      actor: doctor@example.com
+      action: READ
+    expect: accept
+
+  - name: missing message
+    event:
+      actor: doctor@example.com
+      action: READ
+    expect:
+      reject: 'missing/invalid: message'
 
   - name: actor is not an email
     event:
-      message: m
+      message: User viewed patient record
       actor: doctor
       action: READ
-      data:
-        resourceId: r1
-        resourceType: PatientRecord
     expect:
       reject: 'invalid: actor must be a valid email address'
 
   - name: action not in enum
     event:
-      message: m
+      message: User exported patient record
       actor: doctor@example.com
       action: EXPORT
-      data:
-        resourceId: r1
-        resourceType: PatientRecord
     expect:
       reject: 'invalid: action must be one of READ, CREATE, UPDATE, DELETE'
 
-  - name: missing required data
+  - name: data is not an object
     event:
-      message: m
+      message: User viewed patient record
       actor: doctor@example.com
       action: READ
+      data: patient-42
     expect:
-      reject: 'missing/invalid: data'
-
-  - name: data missing a required key
-    event:
-      message: m
-      actor: doctor@example.com
-      action: READ
-      data:
-        resourceId: r1
-    expect:
-      reject: 'missing/invalid: data.resourceType'
-
-  - name: data required key is an empty string
-    event:
-      message: m
-      actor: doctor@example.com
-      action: READ
-      data:
-        resourceId: ""
-        resourceType: PatientRecord
-    expect:
-      reject: 'missing/invalid: data.resourceId'
+      reject: 'invalid: data must be an object'

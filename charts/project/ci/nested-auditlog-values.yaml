@@ -15,20 +15,47 @@ resourceQuota:
       limits.memory: 8Gi
       requests.storage: 100Gi
 
+# Large nested audit log schema exercising every option. Also run as VRL tests from
+# tests/auditlog/nested-auditlog-values.yaml. See auditlog-values.yaml for a simple schema.
+#
+# Accepted event (only message, actor, action, dryRun and data.resourceId are required):
+# {
+#   "message": "Record exported",
+#   "actor": "user@example.com",
+#   "action": "READ",
+#   "correlationId": "0a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d",
+#   "classification": "internal",
+#   "severity": 3,
+#   "score": 2.5,
+#   "priority": 2,
+#   "dryRun": false,
+#   "data": {
+#     "resourceId": "ABC-12",
+#     "note": "it's done",
+#     "owner": {
+#       "id": "6f1c2a9e-3b4d-4e5f-8a7b-1c2d3e4f5a6b",
+#       "team": "core"
+#     }
+#   },
+#   "meta": {
+#     "source": "api"
+#   }
+# }
 auditlog:
   enabled: true
   schema:
-    # string length bounds
+    # "Record exported". Between 3 and 50 characters.
     message:
       type: string
       required: true
       minLength: 3
       maxLength: 50
+    # "user@example.com"
     actor:
       type: string
       required: true
       format: email
-    # enum values containing characters that need escaping in VRL
+    # "READ". The odd values check that `<`, `"` and `{{` are escaped in the generated VRL.
     action:
       type: string
       required: true
@@ -37,47 +64,63 @@ auditlog:
         - EXPORT<CSV>
         - SHARE "public"
         - "{{ any }}"
-    # integer with bounds
+    # "0a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d". Optional; lowercase UUID when present.
+    correlationId:
+      type: string
+      format: uuid
+    # "internal". Optional; one of these values when present.
+    classification:
+      type: string
+      enum:
+        - public
+        - internal
+        - confidential
+        - restricted
+    # 3. A whole number from 1 to 5; 2.5 or "3" are rejected.
     severity:
       type: integer
       minimum: 1
       maximum: 5
-    # number with fractional and large bounds
+    # 2.5. Any number, integer or decimal, from -1.5 to 1000000.
     score:
       type: number
       minimum: -1.5
       maximum: 1000000
-    # integer enum
+    # 2. One of these whole numbers.
     priority:
       type: integer
       enum: [1, 2, 3]
-    # required boolean (false is a valid value)
+    # false. Required; true and false are both valid, the string "false" is not.
     dryRun:
       type: boolean
       required: true
-    # nested properties, two levels deep
+    # {"resourceId": "ABC-12", "note": "...", "owner": {...}}
     data:
       type: object
       required: true
       properties:
+        # "ABC-12". Three capital letters, a dash and digits.
         resourceId:
           type: string
           required: true
           pattern: '^[A-Z]{3}-\d+$'
-        # pattern containing a single quote
+        # "it's done". Must contain exactly one single quote.
         note:
           type: string
           pattern: "^[^']*'[^']*$"
+        # {"id": "6f1c2a9e-...", "team": "core"}. Optional, but when present `id` is required.
         owner:
           type: object
           properties:
+            # "6f1c2a9e-3b4d-4e5f-8a7b-1c2d3e4f5a6b"
             id:
               type: string
               required: true
               format: uuid
+            # "core"
             team:
               type: string
-    # deprecated requiredKeys alias
+    # {"source": "api"}. Optional; uses the deprecated requiredKeys, kept to test it still works.
     meta:
       type: object
       requiredKeys:

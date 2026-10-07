@@ -1,5 +1,5 @@
-# charts/project/ci/nested-auditlog-values.yaml: nested properties, pattern, lengths, numbers,
-# booleans, escaping and the deprecated requiredKeys alias.
+# charts/project/ci/nested-auditlog-values.yaml: nested properties, formats, optional fields,
+# pattern, lengths, numbers, booleans, escaping and the deprecated requiredKeys alias.
 values:
   - charts/project/ci/nested-auditlog-values.yaml
 
@@ -19,6 +19,8 @@ cases:
       message: Exported
       actor: user@example.com
       action: EXPORT<CSV>
+      correlationId: 0a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d
+      classification: internal
       severity: 3
       score: 2.5
       priority: 2
@@ -32,6 +34,63 @@ cases:
       meta:
         source: api
     expect: accept
+
+  - name: example event from the values file comment
+    event:
+      message: Record exported
+      actor: user@example.com
+      action: READ
+      correlationId: 0a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d
+      classification: internal
+      severity: 3
+      score: 2.5
+      priority: 2
+      dryRun: false
+      data:
+        resourceId: ABC-12
+        note: it's done
+        owner:
+          id: 6f1c2a9e-3b4d-4e5f-8a7b-1c2d3e4f5a6b
+          team: core
+      meta:
+        source: api
+    expect: accept
+
+  - name: optional uuid is not a uuid
+    event:
+      message: Exported
+      actor: user@example.com
+      action: READ
+      correlationId: abc
+      dryRun: false
+      data:
+        resourceId: ABC-12
+    expect:
+      reject: 'invalid: correlationId must be a valid UUID'
+
+  - name: uppercase uuid is rejected
+    event:
+      message: Exported
+      actor: user@example.com
+      action: READ
+      correlationId: 0A1B2C3D-4E5F-4A6B-8C7D-9E0F1A2B3C4D
+      dryRun: false
+      data:
+        resourceId: ABC-12
+    expect:
+      reject: 'invalid: correlationId must be a valid UUID'
+
+  - name: optional enum not in enum
+    event:
+      message: Exported
+      actor: user@example.com
+      action: READ
+      classification: secret
+      dryRun: false
+      data:
+        resourceId: ABC-12
+    expect:
+      reject: 'invalid: classification must be one of public, internal, confidential, restricted'
 
   - name: enum value with quotes
     event:
