@@ -68,7 +68,15 @@ if !exists({{ $path }}) || is_nullish({{ $path }}) {
 }
 {{- end }}
 if exists({{ $path }}) && !is_null({{ $path }}) {
-{{- include (printf "project.auditlog.vrl.%s" (eq $type "integer" | ternary "number" $type)) $field }}
+{{- if eq $type "string" }}
+{{- include "project.auditlog.vrl.string" $field }}
+{{- else if or (eq $type "number") (eq $type "integer") }}
+{{- include "project.auditlog.vrl.number" $field }}
+{{- else if eq $type "boolean" }}
+{{- include "project.auditlog.vrl.boolean" $field }}
+{{- else if eq $type "object" }}
+{{- include "project.auditlog.vrl.object" $field }}
+{{- end }}
 }
 {{- end }}
 
