@@ -8,6 +8,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Fixed
+- `KeycloakGroup` resources now match the keycloak-operator CRD (v0.11.0 or newer); before, the API server rejected all three groups:
+  - `spec.name` is set to the Keycloak group name. It is required since keycloak-operator [v0.10.0](https://github.com/Hostzero-GmbH/keycloak-operator/releases/tag/v0.10.0); existing groups without it report `InvalidIdentifier` and stop syncing. The names are unchanged, so existing Keycloak groups are kept.
+  - Each group names exactly one parent, as required since [v0.11.0](https://github.com/Hostzero-GmbH/keycloak-operator/releases/tag/v0.11.0). The `<tenant>-viewer` and `<tenant>-developer` groups only set `parentGroupRef`, and the tenant group sets `parentGroupRef` when `keycloakGroup.parentGroupRef` is set (default `tenants`), otherwise `realmRef`. `keycloakGroup.realmRef` is therefore only used when `parentGroupRef` is empty.
+
 ## [3.2.0] - 2026-09-04
 
 ### Changed

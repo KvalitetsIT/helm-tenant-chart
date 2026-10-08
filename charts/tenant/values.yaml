@@ -123,7 +123,7 @@ projects: {}
 # KEYCLOAK GROUP
 # Creates a KeycloakGroup for the tenant in Keycloak.
 # Requires the keycloak-operator CRD to be installed on the cluster
-# (keycloak.hostzero.com/v1beta1).
+# (keycloak.hostzero.com/v1beta1), keycloak-operator v0.11.0 or newer.
 # -----------------------------------------------------------------------
 
 # @default -- See [values.yaml](values.yaml)
@@ -135,10 +135,12 @@ keycloakGroup:
   # -- Namespace where the KeycloakGroup resource is created.
   namespace: auth
 
-  # -- Keycloak realm to create the group in.
+  # -- KeycloakRealm resource the tenant group is created in. Only used when `parentGroupRef` is empty;
+  # a nested group inherits its realm from the parent chain.
   realmRef: infrastructure
 
-  # -- Parent group under which the tenant group is nested.
+  # -- KeycloakGroup resource (in `namespace`) the tenant group is nested under.
+  # Set to empty to create the tenant group at the top level of `realmRef` instead.
   parentGroupRef: tenants
 
 # -----------------------------------------------------------------------
