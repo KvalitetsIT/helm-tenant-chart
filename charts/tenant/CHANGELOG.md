@@ -8,6 +8,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [4.0.0] - 2026-10-20
+
+### Changed
+- **Breaking:** `projectDefaults.projectApplication.source.targetRevision` now defaults to `4.0.*` (was `3.1.*`), so project Applications deploy project chart 4.0. Project 4.0 renders stricter audit log schemas and type-checks optional fields, see the project chart changelog. Set `targetRevision: "3.1.*"` in `projectDefaults` or per project to stay on 3.1.
+
 ### Fixed
 - `KeycloakGroup` resources now match the keycloak-operator CRD (v0.11.0 or newer); before, the API server rejected all three groups:
   - `spec.name` is set to the Keycloak group name. It is required since keycloak-operator [v0.10.0](https://github.com/Hostzero-GmbH/keycloak-operator/releases/tag/v0.10.0); existing groups without it report `InvalidIdentifier` and stop syncing. The names are unchanged, so existing Keycloak groups are kept.
