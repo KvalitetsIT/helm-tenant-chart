@@ -118,11 +118,57 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- if or $root.Values.roleGroups $p.appProject -}}
   {{- $roleGroupOverrides := dict -}}
   {{- range $roleName, $groups := $root.Values.roleGroups -}}
-    {{- $_ := set $roleGroupOverrides $roleName (dict "groups" $groups) -}}
+    {{- $_ := set $roleGroupOverrides $roleName (dict "groups" (include "tenant.roleGroupList" (list $root $roleName) | fromYamlArray)) -}}
   {{- end -}}
   {{- $valuesObject = mergeOverwrite $valuesObject (dict "appProject" (mergeOverwrite (deepCopy (dict "roles" $roleGroupOverrides)) ($p.appProject | default dict))) -}}
 {{- end -}}
 {{- toYaml $valuesObject -}}
+{{- end -}}
+
+{{/* "true" when the tenant's viewers and developers get their Keycloak groups from identity provider mappers,
+     empty otherwise. Fails on settings the mappers cannot work with. */}}
+{{- define "tenant.identityProviderMapperEnabled" -}}
+{{- $kg := .Values.keycloakGroup -}}
+{{- if ($kg.identityProviderMapper).enabled -}}
+  {{- if not $kg.enabled -}}
+    {{- fail "keycloakGroup.identityProviderMapper.enabled requires keycloakGroup.enabled: the mappers assign the tenant's Keycloak groups" -}}
+  {{- end -}}
+  {{- if not $kg.identityProviderMapper.identityProviderRef -}}
+    {{- fail "keycloakGroup.identityProviderMapper.identityProviderRef is required when keycloakGroup.identityProviderMapper.enabled is true" -}}
+  {{- end -}}
+  {{- if and $kg.parentGroupRef (not (hasPrefix "/" ($kg.parentGroupPath | default ""))) -}}
+    {{- fail (printf "keycloakGroup.parentGroupPath %q must be the Keycloak path of parentGroupRef, starting with /" ($kg.parentGroupPath | default "")) -}}
+  {{- end -}}
+  {{- "true" -}}
+{{- end -}}
+{{- end -}}
+
+{{/* Groups granted a tenant role, as a YAML list. With identity provider mappers the viewer and developer
+     roles match the tenant's Keycloak groups, since that is what the mappers put users in; otherwise
+     roleGroups.<role>, defaulting to <tenant>-<role>.
+     Call with a list: (list $ "viewer") */}}
+{{- define "tenant.roleGroupList" -}}
+{{- $root := index . 0 -}}
+{{- $role := index . 1 -}}
+{{- $keycloakGroup := list (printf "%s-%s" (include "tenant.name" $root) $role) -}}
+{{- if and (include "tenant.identityProviderMapperEnabled" $root) (has $role (list "viewer" "developer")) -}}
+  {{- toYaml $keycloakGroup -}}
+{{- else -}}
+  {{- toYaml ((index $root.Values.roleGroups $role) | default $keycloakGroup) -}}
+{{- end -}}
+{{- end -}}
+
+{{/* Keycloak path of a tenant role group, e.g. /tenants/acme/acme-developer.
+     Call with a list: (list $ "developer") */}}
+{{- define "tenant.keycloakGroupPath" -}}
+{{- $root := index . 0 -}}
+{{- $role := index . 1 -}}
+{{- $tenantName := include "tenant.name" $root -}}
+{{- $parent := "" -}}
+{{- if $root.Values.keycloakGroup.parentGroupRef -}}
+  {{- $parent = $root.Values.keycloakGroup.parentGroupPath | trimSuffix "/" -}}
+{{- end -}}
+{{- printf "%s/%s/%s-%s" $parent $tenantName $tenantName $role -}}
 {{- end -}}
 
 {{/* Unique app-of-apps repoURLs: the projectDefaults default plus any per-project overrides. Yields a YAML list. */}}

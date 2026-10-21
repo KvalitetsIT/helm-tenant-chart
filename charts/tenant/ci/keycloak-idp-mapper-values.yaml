@@ -1,0 +1,30 @@
+projectDefaults:
+  application:
+    source:
+      repoURL: "https://github.com/example/tenant-repo.git"
+      targetRevision: "main"
+  resourceQuota:
+    spec:
+      hard:
+        limits.cpu: "4"
+        limits.memory: "8Gi"
+        requests.storage: "100Gi"
+
+projects:
+  inventory:
+    application:
+      source:
+        path: "inventory/apps"
+
+roleGroups:
+  viewer:
+    - GRP-Tenant-Viewer
+  developer:
+    - GRP-Tenant-Developer
+    - GRP-Tenant-Developer-External
+
+keycloakGroup:
+  enabled: true
+  identityProviderMapper:
+    enabled: true
+    identityProviderRef: infrastructure-adfs-idp

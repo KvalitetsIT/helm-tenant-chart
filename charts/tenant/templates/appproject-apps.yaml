@@ -29,7 +29,7 @@ spec:
     - name: viewer
       description: "Read-only access to all {{ $tenantName }} project Applications"
       groups:
-      {{- range (index .Values.roleGroups "viewer") | default (list (printf "%s-viewer" $tenantName)) }}
+      {{- range include "tenant.roleGroupList" (list . "viewer") | fromYamlArray }}
         - {{ . | quote }}
       {{- end }}
       policies:
@@ -37,7 +37,7 @@ spec:
     - name: developer
       description: "Self-service sync and actions on {{ $tenantName }} project Applications"
       groups:
-      {{- range (index .Values.roleGroups "developer") | default (list (printf "%s-developer" $tenantName)) }}
+      {{- range include "tenant.roleGroupList" (list . "developer") | fromYamlArray }}
         - {{ . | quote }}
       {{- end }}
       policies:

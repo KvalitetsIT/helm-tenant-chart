@@ -1,0 +1,28 @@
+{{- /* Run the validation even when the CRD is missing, so a misconfiguration fails at template time. */}}
+{{- if and (include "tenant.identityProviderMapperEnabled" .) (.Capabilities.APIVersions.Has "keycloak.hostzero.com/v1beta1") }}
+{{- $tenantName := include "tenant.name" . }}
+{{- $mapper := .Values.keycloakGroup.identityProviderMapper }}
+{{- range $role := list "viewer" "developer" }}
+{{- range $i, $group := index $.Values.roleGroups $role | default list }}
+---
+apiVersion: keycloak.hostzero.com/v1beta1
+kind: KeycloakIdentityProviderMapper
+metadata:
+  name: {{ printf "%s-%s-idp-mapper-%d" $tenantName $role $i }}
+  namespace: {{ $.Values.keycloakGroup.namespace }}
+  labels:
+    {{- include "tenant.labels" $ | nindent 4 }}
+spec:
+  identityProviderRef:
+    name: {{ $mapper.identityProviderRef }}
+  definition:
+    name: {{ printf "%s-%s-%d" $tenantName $role $i }}
+    identityProviderMapper: oidc-advanced-group-idp-mapper
+    config:
+      claims: {{ list (dict "key" $mapper.claim "value" $group) | toJson | quote }}
+      are.claim.values.regex: "false"
+      group: {{ include "tenant.keycloakGroupPath" (list $ $role) | quote }}
+      syncMode: FORCE
+{{- end }}
+{{- end }}
+{{- end }}

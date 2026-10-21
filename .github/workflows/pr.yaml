@@ -172,6 +172,9 @@ jobs:
           kubectl apply -f https://raw.githubusercontent.com/Hostzero-GmbH/keycloak-operator/refs/tags/v0.13.1/config/crd/bases/keycloak.hostzero.com_keycloakgroups.yaml
           wait_for_crd keycloakgroups.keycloak.hostzero.com
 
+          kubectl apply -f https://raw.githubusercontent.com/Hostzero-GmbH/keycloak-operator/refs/tags/v0.13.1/config/crd/bases/keycloak.hostzero.com_keycloakidentityprovidermappers.yaml
+          wait_for_crd keycloakidentityprovidermappers.keycloak.hostzero.com
+
       - name: Pre-create required namespaces
         if: steps.list-changed.outputs.changed == 'true'
         run: |
