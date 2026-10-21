@@ -143,6 +143,27 @@ keycloakGroup:
   # Set to empty to create the tenant group at the top level of `realmRef` instead.
   parentGroupRef: tenants
 
+  # -- Keycloak path of the `parentGroupRef` group. Only used by `identityProviderMapper`, to build the
+  # paths of the groups it assigns, e.g. `/tenants/<tenant>/<tenant>-developer`.
+  parentGroupPath: /tenants
+
+  # -- Opt-in. Put users in the tenant's `<tenant>-viewer` and `<tenant>-developer` Keycloak groups at
+  # login, based on a claim from an identity provider. Each value in `roleGroups.viewer` and
+  # `roleGroups.developer` becomes an "Advanced Claim to Group" mapper on `identityProviderRef`, with
+  # sync mode `FORCE`, so membership follows the claim on every login.
+  # When enabled, the viewer and developer roles in the AppProjects and in the `tenant-group-mapping`
+  # ConfigMap match the Keycloak group names instead of `roleGroups`, since those groups are what the
+  # mappers assign. Other roles in `roleGroups` are used as before.
+  # @default -- See [values.yaml](values.yaml)
+  identityProviderMapper:
+    # -- Enable the identity provider mappers. Requires `keycloakGroup.enabled`.
+    enabled: false
+    # -- Required when enabled. KeycloakIdentityProvider resource (in `keycloakGroup.namespace`) the
+    # mappers are added to.
+    identityProviderRef: ""
+    # -- Claim in the identity provider's token that holds the values listed in `roleGroups`.
+    claim: role
+
 # -----------------------------------------------------------------------
 # GRAFANA ORG
 # Creates a GrafanaOrg and GrafanaOrgDatasource resources in the `tenants`

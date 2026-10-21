@@ -22,10 +22,10 @@ metadata:
     tenant.kitkube.dk/name: {{ $tenantName }}
 data:
   viewer: |
-    {{- range (index .Values.roleGroups "viewer") | default (list (printf "%s-viewer" $tenantName)) }}
+    {{- range include "tenant.roleGroupList" (list . "viewer") | fromYamlArray }}
     {{ . }}
     {{- end }}
   developer: |
-    {{- range (index .Values.roleGroups "developer") | default (list (printf "%s-developer" $tenantName)) }}
+    {{- range include "tenant.roleGroupList" (list . "developer") | fromYamlArray }}
     {{ . }}
     {{- end }}

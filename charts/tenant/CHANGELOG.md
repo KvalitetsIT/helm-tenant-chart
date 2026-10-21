@@ -8,6 +8,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+- `keycloakGroup.identityProviderMapper`: opt-in identity provider mappers that put users in the tenant's `<tenant>-viewer` and `<tenant>-developer` Keycloak groups at login. Each value in `roleGroups.viewer` and `roleGroups.developer` becomes an "Advanced Claim to Group" `KeycloakIdentityProviderMapper` on `identityProviderRef`, matching `claim` (default `role`) with sync mode `FORCE`. When enabled, the viewer and developer roles in both AppProjects, the project Applications and the `tenant-group-mapping` ConfigMap use the Keycloak group names instead of `roleGroups`. Disabled by default, so existing tenants render unchanged.
+- `keycloakGroup.parentGroupPath` (default `/tenants`): Keycloak path of `parentGroupRef`, used to build the group paths the mappers assign.
+
 ## [4.0.0] - 2026-10-20
 
 ### Changed
