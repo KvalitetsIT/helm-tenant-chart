@@ -112,4 +112,4 @@ Pull requests are validated by the [PR workflow](.github/workflows/pr.yaml):
 
 - Lints all charts with `ct lint`
 - Installs all charts into a KinD cluster with `ct install`
-- Required CRDs (ArgoCD, SealedSecrets, Cilium) are installed before the install step
+- Required CRDs (ArgoCD, SealedSecrets, Cilium, Gateway API, Kyverno, Keycloak operator, Grafana org operator) are installed before the install step

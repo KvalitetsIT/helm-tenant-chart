@@ -83,7 +83,7 @@ A Helm chart for creating a new tenant in the Kithosting platform
 | grafanaOrg.enabled | bool | `false` | Enable GrafanaOrg and GrafanaOrgDatasource resources. Also requires the grafana-org-operator CRD to be present in the cluster. |
 | grafanaOrg.grafanaInstanceRef | string | `"monitoring/grafana"` | Cross-namespace ref to the GrafanaInstance. |
 | grafanaOrg.orgName | string | `""` | Grafana display name for the org. Defaults to the tenant name. |
-| grafanaOrg.orgMapping | list | See [values.yaml](values.yaml) | OIDC group → Grafana role mappings. |
+| grafanaOrg.orgMapping | list | See [values.yaml](values.yaml) | OIDC group → Grafana role mappings. Each entry sets either `group`, one OIDC group, or `roleGroup`, a tenant role: the entry is repeated for every group in `roleGroups.<roleGroup>`, defaulting to `<tenant>-<roleGroup>`, so Grafana uses the same groups as the AppProjects and `tenant-group-mapping`. |
 | grafanaOrg.datasources | object | See [values.yaml](values.yaml) | Map of datasources to provision under this org. Loki and Prometheus are pre-configured with standard cluster-local endpoints. `secureJsonData.httpHeaderValue1` auto-defaults to the release namespace if not set, which populates the tenant-isolation header (X-Scope-OrgId / X-Namespace). |
 
 ## Architecture
@@ -334,6 +334,60 @@ projects:
       source:
         path: "inventory/apps"
 ```
+
+---
+
+### Grafana Org with Role Groups
+
+The default `grafanaOrg.orgMapping` maps the tenant roles with `roleGroup` entries, so Grafana
+uses the same groups as the AppProjects. Each `roleGroup` entry is repeated for every group in
+`roleGroups.<roleGroup>`; without `roleGroups` it maps `{tenant}-developer` and `{tenant}-viewer`.
+Use `group` instead of `roleGroup` for a fixed group, as the default does for `cluster-admin`.
+
+```yaml
+projectDefaults:
+  application:
+    source:
+      repoURL: "https://github.com/example/tenant-repo.git"
+      targetRevision: "main"
+  resourceQuota:
+    spec:
+      hard:
+        limits.cpu: "4"
+        limits.memory: "8Gi"
+        requests.storage: "100Gi"
+
+# roleGroups names the groups as the identity provider sends them in the groups claim, here AD groups.
+# The default orgMapping's roleGroup entries expand to one entry per group:
+# two Editor entries for the developers and one Viewer entry for the viewers.
+roleGroups:
+  developer:
+    - GRP-Acme-Developer
+    - GRP-Acme-Developer-External
+  viewer:
+    - GRP-Acme-Viewer
+
+grafanaOrg:
+  enabled: true
+  orgName: acme
+```
+
+This renders the following `orgMapping`:
+
+```yaml
+- group: cluster-admin
+  role: Admin
+- group: cluster-readonly
+  role: Viewer
+- group: GRP-Acme-Developer
+  role: Editor
+- group: GRP-Acme-Developer-External
+  role: Editor
+- group: GRP-Acme-Viewer
+  role: Viewer
+```
+
+Each entry also carries `provider: generic_oauth`.
 
 ---
 
