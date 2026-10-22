@@ -8,6 +8,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Changed
+- CI: `ci/grafana-org-values.yaml` and `ci/keycloak-group-values.yaml` no longer set `projectDefaults.projectApplication`, which pinned project chart `2.1.*`. Like the other CI values they now use the chart default (`4.0.*` since 4.0.0) and follow it on future releases. Their `projectDefaults` now also match the other CI values (`https://github.com/example/tenant-repo.git`, `requests.storage: "100Gi"`). `ci/pinned-version-values.yaml` keeps its `1.2.0` pin, since it tests pinning. No change to the chart itself.
+
 ## [4.0.0] - 2026-10-20
 
 ### Changed
