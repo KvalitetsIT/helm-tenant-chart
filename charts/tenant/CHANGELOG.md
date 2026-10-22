@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [4.1.0] - 2026-10-22
+
 ### Added
 - `grafanaOrg.orgMapping` entries can set `roleGroup` (a tenant role, e.g. `developer`) instead of `group`. The entry is repeated for every group in `roleGroups.<roleGroup>`, defaulting to `<tenant>-<roleGroup>`. Setting both `group` and `roleGroup` fails at template time.
 - CI: `ci/grafana-org-rolegroups-values.yaml` covers `roleGroups` with several groups per role. The PR workflow now installs the `GrafanaOrg` and `GrafanaOrgDatasource` CRDs and creates the `tenants` namespace, so `ct install` applies the Grafana resources; before, they were never rendered in CI.
