@@ -158,6 +158,36 @@ precedence over `roleGroups`.
 
 ---
 
+### Grafana Org with Role Groups
+
+The default `grafanaOrg.orgMapping` maps the tenant roles with `roleGroup` entries, so Grafana
+uses the same groups as the AppProjects. Each `roleGroup` entry is repeated for every group in
+`roleGroups.<roleGroup>`; without `roleGroups` it maps `{tenant}-developer` and `{tenant}-viewer`.
+Use `group` instead of `roleGroup` for a fixed group, as the default does for `cluster-admin`.
+
+```yaml
+{{ (.Files.Get "ci/grafana-org-rolegroups-values.yaml") -}}
+```
+
+This renders the following `orgMapping`:
+
+```yaml
+- group: cluster-admin
+  role: Admin
+- group: cluster-readonly
+  role: Viewer
+- group: GRP-Acme-Developer
+  role: Editor
+- group: GRP-Acme-Developer-External
+  role: Editor
+- group: GRP-Acme-Viewer
+  role: Viewer
+```
+
+Each entry also carries `provider: generic_oauth`.
+
+---
+
 ### Per-project Custom RBAC Role
 
 Add a custom `ops` role to one project's AppProject, in addition to the default viewer and

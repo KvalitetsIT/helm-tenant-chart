@@ -162,7 +162,9 @@ grafanaOrg:
   # -- Grafana display name for the org. Defaults to the tenant name.
   orgName: ""
 
-  # -- OIDC group → Grafana role mappings.
+  # -- OIDC group → Grafana role mappings. Each entry sets either `group`, one OIDC group, or `roleGroup`,
+  # a tenant role: the entry is repeated for every group in `roleGroups.<roleGroup>`, defaulting to
+  # `<tenant>-<roleGroup>`, so Grafana uses the same groups as the AppProjects and `tenant-group-mapping`.
   # @default -- See [values.yaml](values.yaml)
   orgMapping:
     - group: cluster-admin
@@ -171,10 +173,10 @@ grafanaOrg:
     - group: cluster-readonly
       role: Viewer
       provider: generic_oauth
-    - group: '{{ include "tenant.name" . }}-developer'
+    - roleGroup: developer
       role: Editor
       provider: generic_oauth
-    - group: '{{ include "tenant.name" . }}-viewer'
+    - roleGroup: viewer
       role: Viewer
       provider: generic_oauth
 

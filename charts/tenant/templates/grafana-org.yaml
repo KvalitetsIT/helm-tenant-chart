@@ -9,8 +9,23 @@ metadata:
 spec:
   grafanaInstanceRef: {{ .Values.grafanaOrg.grafanaInstanceRef }}
   orgName: {{ default (include "tenant.name" .) .Values.grafanaOrg.orgName }}
-  {{- with .Values.grafanaOrg.orgMapping }}
+  {{- $tenantName := include "tenant.name" . }}
+  {{- /* A roleGroup entry is repeated for every group granted that tenant role, as in the AppProjects. */}}
+  {{- $orgMapping := list }}
+  {{- range $entry := fromYamlArray (tpl (toYaml (.Values.grafanaOrg.orgMapping | default list)) $) }}
+  {{- if $entry.roleGroup }}
+    {{- if $entry.group }}
+      {{- fail (printf "grafanaOrg.orgMapping: set either group or roleGroup, not both (roleGroup %q, group %q)" $entry.roleGroup $entry.group) }}
+    {{- end }}
+    {{- range (index $.Values.roleGroups $entry.roleGroup) | default (list (printf "%s-%s" $tenantName $entry.roleGroup)) }}
+      {{- $orgMapping = append $orgMapping (merge (dict "group" .) (omit $entry "roleGroup")) }}
+    {{- end }}
+  {{- else }}
+    {{- $orgMapping = append $orgMapping $entry }}
+  {{- end }}
+  {{- end }}
+  {{- with $orgMapping }}
   orgMapping:
-    {{- tpl (toYaml .) $ | nindent 4 }}
+    {{- toYaml . | nindent 4 }}
   {{- end }}
 {{- end }}

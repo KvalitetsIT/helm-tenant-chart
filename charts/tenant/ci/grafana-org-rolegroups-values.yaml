@@ -1,0 +1,25 @@
+projectDefaults:
+  application:
+    source:
+      repoURL: "https://github.com/example/tenant-repo.git"
+      targetRevision: "main"
+  resourceQuota:
+    spec:
+      hard:
+        limits.cpu: "4"
+        limits.memory: "8Gi"
+        requests.storage: "100Gi"
+
+# roleGroups names the groups as the identity provider sends them in the groups claim, here AD groups.
+# The default orgMapping's roleGroup entries expand to one entry per group:
+# two Editor entries for the developers and one Viewer entry for the viewers.
+roleGroups:
+  developer:
+    - GRP-Acme-Developer
+    - GRP-Acme-Developer-External
+  viewer:
+    - GRP-Acme-Viewer
+
+grafanaOrg:
+  enabled: true
+  orgName: acme
