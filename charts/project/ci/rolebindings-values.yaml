@@ -1,0 +1,30 @@
+tenantName: acme
+projectName: inventory
+tenantAppProjectName: acme-apps
+
+application:
+  source:
+    path: inventory/apps
+    repoURL: https://github.com/example/tenant-repo.git
+    targetRevision: "main"
+
+resourceQuota:
+  spec:
+    hard:
+      limits.cpu: "4"
+      limits.memory: 8Gi
+      requests.storage: 100Gi
+
+roleBindings:
+  developer:
+    - view
+    - tenant-developer
+  viewer:
+    - view
+
+extraRoles:
+  developer:
+    rules:
+      - apiGroups: [""]
+        resources: ["pods/portforward"]
+        verbs: ["create"]

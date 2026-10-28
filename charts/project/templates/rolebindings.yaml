@@ -1,0 +1,60 @@
+{{- if and .Values.tenantName .Values.projectName }}
+{{- $projectNamespace := include "project.projectNamespace" . }}
+{{- range $roleName, $clusterRoles := .Values.roleBindings }}
+{{- $role := required (printf "roleBindings.%s has no matching appProject.roles.%s" $roleName $roleName) (index $.Values.appProject.roles $roleName) }}
+{{- range $clusterRole := $clusterRoles }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ $roleName }}-{{ $clusterRole }}
+  namespace: {{ $projectNamespace }}
+  labels:
+    {{- include "project.labels" $ | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ $clusterRole }}
+subjects:
+  {{- range $role.groups }}
+  - apiGroup: rbac.authorization.k8s.io
+    kind: Group
+    name: {{ . | replace "{tenant}" $.Values.tenantName | replace "{project}" $projectNamespace | quote }}
+  {{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- if and .Values.tenantName .Values.projectName }}
+{{- $projectNamespace := include "project.projectNamespace" . }}
+{{- range $roleName, $extra := .Values.extraRoles }}
+{{- $role := required (printf "extraRoles.%s has no matching appProject.roles.%s" $roleName $roleName) (index $.Values.appProject.roles $roleName) }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ $roleName }}-extra
+  namespace: {{ $projectNamespace }}
+  labels:
+    {{- include "project.labels" $ | nindent 4 }}
+rules:
+  {{- toYaml (required (printf "extraRoles.%s.rules is required" $roleName) $extra.rules) | nindent 2 }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ $roleName }}-extra
+  namespace: {{ $projectNamespace }}
+  labels:
+    {{- include "project.labels" $ | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ $roleName }}-extra
+subjects:
+  {{- range $role.groups }}
+  - apiGroup: rbac.authorization.k8s.io
+    kind: Group
+    name: {{ . | replace "{tenant}" $.Values.tenantName | replace "{project}" $projectNamespace | quote }}
+  {{- end }}
+{{- end }}
+{{- end }}
