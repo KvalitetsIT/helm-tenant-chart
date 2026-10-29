@@ -1,10 +1,10 @@
 tenantName: acme
-projectName: inventory
+projectName: rolebindings
 tenantAppProjectName: acme-apps
 
 application:
   source:
-    path: inventory/apps
+    path: rolebindings/apps
     repoURL: https://github.com/example/tenant-repo.git
     targetRevision: "main"
 
