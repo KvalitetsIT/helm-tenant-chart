@@ -1,7 +1,6 @@
 {{- if and .Values.tenantName .Values.projectName }}
 {{- $projectNamespace := include "project.projectNamespace" . }}
-{{- /* One RoleBinding per ClusterRole, with the groups of every role that lists it.
-     Named tenant-<ClusterRole>: view -> tenant-view, tenant-developer -> tenant-developer. */}}
+{{- /* One RoleBinding per ClusterRole, named after it, with the groups of every role that lists it. */}}
 {{- $bindings := dict }}
 {{- range $roleName, $clusterRoles := .Values.roleBindings }}
 {{- $role := required (printf "roleBindings.%s has no matching appProject.roles.%s" $roleName $roleName) (index $.Values.appProject.roles $roleName) }}
@@ -14,7 +13,7 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: tenant-{{ trimPrefix "tenant-" $clusterRole }}
+  name: {{ $clusterRole }}
   namespace: {{ $projectNamespace }}
   labels:
     {{- include "project.labels" $ | nindent 4 }}

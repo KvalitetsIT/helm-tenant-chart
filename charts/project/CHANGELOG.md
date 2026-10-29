@@ -9,7 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Added
-- `roleBindings` - binds ClusterRoles to the `appProject.roles` groups in the project namespace, so developers can use kubectl and k9s. One RoleBinding per ClusterRole, named `tenant-<ClusterRole>`. Off by default.
+- `roleBindings` - binds ClusterRoles to the `appProject.roles` groups in the project namespace, so developers can use kubectl and k9s. One RoleBinding per ClusterRole, named after the ClusterRole. Off by default.
 - `extraRoles` - extra Role and RoleBinding for a single project on top of `roleBindings`, bound to the groups of an `appProject.roles` entry. Off by default.
 
 ## [4.0.0] - 2026-10-20

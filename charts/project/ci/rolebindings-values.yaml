@@ -17,10 +17,10 @@ resourceQuota:
 
 roleBindings:
   developer:
-    - view
+    - tenant-view
     - tenant-developer
   viewer:
-    - view
+    - tenant-view
 
 extraRoles:
   developer:
