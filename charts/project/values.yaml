@@ -147,7 +147,8 @@ appProject:
         - "applications, action/*, {project}/{tenantNamespace}/*, allow"
 
 # -- Optional. Kubernetes RBAC in the project namespace, so the `appProject.roles` groups can use kubectl and k9s.
-# Maps a role name from `appProject.roles` to the ClusterRoles bound to its groups, one RoleBinding per ClusterRole.
+# Maps a role name from `appProject.roles` to the ClusterRoles bound to its groups. Creates one RoleBinding per
+# ClusterRole, named `tenant-<ClusterRole>`, with the groups of every role that lists it.
 # The ClusterRoles are owned by the platform and must exist in the cluster. Requires OIDC login to the Kubernetes API.
 # Example: `{developer: [view, tenant-developer], viewer: [view]}`.
 # Set for all projects via `projectDefaults.roleBindings` in the tenant chart.
