@@ -8,6 +8,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [4.2.0] - 2026-11-11
+
+### Changed
+- `projectDefaults.projectApplication.source.targetRevision` now defaults to `4.1.*` (was `4.0.*`), so project Applications deploy project chart 4.1. Project 4.1 adds `roleBindings` and `extraRoles`, both off by default, so existing projects render the same resources.
+
 ## [4.1.0] - 2026-10-22
 
 ### Added
