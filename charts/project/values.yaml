@@ -146,6 +146,21 @@ appProject:
         - "applications, sync, {project}/{tenantNamespace}/*, allow"
         - "applications, action/*, {project}/{tenantNamespace}/*, allow"
 
+# -- Optional. Kubernetes RBAC in the project namespace, so the `appProject.roles` groups can use kubectl and k9s.
+# Maps a role name from `appProject.roles` to the ClusterRoles bound to its groups. Creates one RoleBinding per
+# ClusterRole, named after the ClusterRole, with the groups of every role that lists it.
+# The ClusterRoles are owned by the platform and must exist in the cluster. Requires OIDC login to the Kubernetes API.
+# Example: `{developer: [tenant-view, tenant-developer], viewer: [tenant-view]}`.
+# Set for all projects via `projectDefaults.roleBindings` in the tenant chart.
+roleBindings: {}
+
+# -- Optional. Extra permissions for a single project on top of `roleBindings`.
+# Maps a role name from `appProject.roles` to Role rules. Creates a Role `<role>-extra` in the project namespace
+# and binds it to the groups of that role.
+# Example: `{developer: {rules: [{apiGroups: [""], resources: ["pods/portforward"], verbs: ["create"]}]}}`.
+# Set per project via `projects.<name>.extraRoles` in the tenant chart.
+extraRoles: {}
+
 # -- Configuration for the app-of-apps Application (`<project>-apps`).
 # `source.repoURL`, `source.path`, and `source.targetRevision` are injected by the tenant chart.
 # Override per project via `projects.<name>.application` in the tenant chart.

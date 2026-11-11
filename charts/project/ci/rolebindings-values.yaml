@@ -1,0 +1,30 @@
+tenantName: acme
+projectName: rolebindings
+tenantAppProjectName: acme-apps
+
+application:
+  source:
+    path: rolebindings/apps
+    repoURL: https://github.com/example/tenant-repo.git
+    targetRevision: "main"
+
+resourceQuota:
+  spec:
+    hard:
+      limits.cpu: "4"
+      limits.memory: 8Gi
+      requests.storage: 100Gi
+
+roleBindings:
+  developer:
+    - tenant-view
+    - tenant-developer
+  viewer:
+    - tenant-view
+
+extraRoles:
+  developer:
+    rules:
+      - apiGroups: [""]
+        resources: ["pods/portforward"]
+        verbs: ["create"]
