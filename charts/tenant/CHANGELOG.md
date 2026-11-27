@@ -8,8 +8,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [4.3.0] - 2026-11-27
+
 ### Changed
-- `projectDefaults.resourceQuota.spec.hard` no longer sets `limits.cpu: ""` by default, so tenants can leave `limits.cpu` out of the quota. Needs the project chart release that makes `limits.cpu` optional. Tenants that set `limits.cpu` render the same quota as before.
+- `projectDefaults.projectApplication.source.targetRevision` now defaults to `4.2.*` (was `4.1.*`), so project Applications deploy project chart 4.2, where `resourceQuota.spec.hard."limits.cpu"` is optional. Existing quotas that set `limits.cpu` render the same.
+- `projectDefaults.resourceQuota.spec.hard` no longer sets `limits.cpu: ""` by default, so tenants can leave `limits.cpu` out of the quota. Needs project chart 4.2, the new default above. Tenants that set `limits.cpu` render the same quota as before.
 
 ## [4.2.0] - 2026-11-11
 
