@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [4.2.0] - 2026-11-27
+
 ### Changed
 - `resourceQuota.spec.hard."limits.cpu"` is now optional. Leave it out so pods can run without a CPU limit and use spare CPU on the node. If it is set, Kubernetes rejects containers without a CPU limit, so they must set one or get it from `limitRange`. `limits.memory` and `requests.storage` are still required.
 - CI: `ci/no-cpu-limit-values.yaml` covers a quota without `limits.cpu`.
