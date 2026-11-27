@@ -108,7 +108,6 @@ projects:
     resourceQuota:
       spec:
         hard:
-          limits.cpu: ""
           limits.memory: ""
           requests.storage: ""
 

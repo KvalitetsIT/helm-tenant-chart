@@ -50,8 +50,7 @@ A Helm chart for creating a new tenant in the Kithosting platform
 | projectDefaults.application.source.repoURL | string | `""` | Required. Default git repository URL for the app-of-apps. |
 | projectDefaults.application.source.targetRevision | string | `""` | Required. Default git branch, tag, or commit SHA. |
 | projectDefaults.application.source.helm | object | `{"valueFiles":["values.yaml"]}` | Optional. Default Helm value files passed to the app-of-apps Application. Per-project overrides replace this list entirely. |
-| projectDefaults.resourceQuota | object | See [values.yaml](values.yaml) | Default ResourceQuota passed to every project via the project chart. `limits.cpu`, `limits.memory`, and `requests.storage` have no project chart defaults — they must be set here or per project. Per-project override: `projects.<name>.resourceQuota`. |
-| projectDefaults.resourceQuota.spec.hard."limits.cpu" | string | `""` | Required |
+| projectDefaults.resourceQuota | object | See [values.yaml](values.yaml) | Default ResourceQuota passed to every project via the project chart. `limits.memory` and `requests.storage` have no project chart defaults, so they must be set here or per project. `limits.cpu` is optional. Leave it out to let pods use spare CPU on the node. If set, Kubernetes rejects containers without a CPU limit, so they must set one or get it from `limitRange`. Per-project override: `projects.<name>.resourceQuota`. |
 | projectDefaults.resourceQuota.spec.hard."limits.memory" | string | `""` | Required |
 | projectDefaults.resourceQuota.spec.hard."requests.storage" | string | `""` | Required |
 | projects | object | See below | Map of tenant projects to create. Each key becomes a project named `<tenant>-<key>`. See the [project chart values](../project/README.md#values) for the full schema and the default values. |
@@ -73,7 +72,7 @@ A Helm chart for creating a new tenant in the Kithosting platform
 | projects.\<project-name>.application.source.repoURL | string | `"https://github.com/example/tenant-repo.git"` | Optional. Git repository URL. Overrides `projectDefaults.application.source.repoURL`. |
 | projects.\<project-name>.application.source.targetRevision | string | `"main"` | Optional. Git branch, tag, or commit SHA. Overrides `projectDefaults.application.source.targetRevision`. |
 | projects.\<project-name>.application.source.helm.valueFiles | list | `["values.yaml"]` | Optional. Helm value files. Overrides `projectDefaults.application.source.helm.valueFiles`. |
-| projects.\<project-name>.resourceQuota | object | `{"spec":{"hard":{"limits.cpu":"","limits.memory":"","requests.storage":""}}}` | Required if not set in projectDefaults. ResourceQuota hard limits. Overrides `projectDefaults.resourceQuota`. |
+| projects.\<project-name>.resourceQuota | object | `{"spec":{"hard":{"limits.memory":"","requests.storage":""}}}` | Required if not set in projectDefaults. ResourceQuota hard limits. Overrides `projectDefaults.resourceQuota`. |
 | projects.\<project-name>.limitRange | object | `{"enabled":false,"spec":{"limits":[{"default":{"cpu":"50m","memory":"64Mi"},"defaultRequest":{"cpu":"25m","memory":"32Mi"},"type":"Container"}]}}` | Optional. LimitRange configuration. Overrides `projectDefaults.limitRange`. |
 | projects.\<project-name>.templates | object | `{"enabled":true}` | Optional. Enable or disable the `templates` subchart for this project. When false, no NetworkPolicies (default or custom) are rendered. Overrides `projectDefaults.templates`. |
 | keycloakGroup.enabled | bool | `false` | Enable KeycloakGroup resource creation. Also requires the keycloak-operator CRD to be present in the cluster. |
