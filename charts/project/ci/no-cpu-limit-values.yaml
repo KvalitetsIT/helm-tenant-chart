@@ -1,0 +1,16 @@
+# Quota without limits.cpu: containers may run without a CPU limit.
+tenantName: acme
+projectName: no-cpu-limit
+tenantAppProjectName: acme-apps
+
+application:
+  source:
+    path: no-cpu-limit/apps
+    repoURL: https://github.com/example/tenant-repo.git
+    targetRevision: "main"
+
+resourceQuota:
+  spec:
+    hard:
+      limits.memory: 8Gi
+      requests.storage: 100Gi

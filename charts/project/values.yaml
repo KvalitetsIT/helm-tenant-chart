@@ -192,6 +192,8 @@ resourceQuota:
   enabled: true
   # -- Required when enabled. ResourceQuota hard limits.
   # Set via `projectDefaults.resourceQuota.spec` in the tenant chart.
+  # `limits.memory` and `requests.storage` are required. `limits.cpu` is optional: if set, Kubernetes rejects
+  # containers without a CPU limit, so they must set one or get it from `limitRange`.
   # See [Kubernetes ResourceQuota](https://kubernetes.io/docs/concepts/policy/resource-quotas/).
   spec: {}
 

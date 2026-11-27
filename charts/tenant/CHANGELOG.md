@@ -8,6 +8,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Changed
+- `projectDefaults.resourceQuota.spec.hard` no longer sets `limits.cpu: ""` by default, so tenants can leave `limits.cpu` out of the quota. Needs the project chart release that makes `limits.cpu` optional. Tenants that set `limits.cpu` render the same quota as before.
+
 ## [4.2.0] - 2026-11-11
 
 ### Changed

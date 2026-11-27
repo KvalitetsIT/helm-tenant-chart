@@ -96,14 +96,14 @@ projectDefaults:
           - values.yaml
 
   # -- Default ResourceQuota passed to every project via the project chart.
-  # `limits.cpu`, `limits.memory`, and `requests.storage` have no project chart defaults — they must be set here or per project.
+  # `limits.memory` and `requests.storage` have no project chart defaults, so they must be set here or per project.
+  # `limits.cpu` is optional. Leave it out to let pods use spare CPU on the node. If set, Kubernetes rejects
+  # containers without a CPU limit, so they must set one or get it from `limitRange`.
   # Per-project override: `projects.<name>.resourceQuota`.
   # @default -- See [values.yaml](values.yaml)
   resourceQuota:
     spec:
       hard:
-        # -- Required
-        limits.cpu: ""
         # -- Required
         limits.memory: ""
         # -- Required
